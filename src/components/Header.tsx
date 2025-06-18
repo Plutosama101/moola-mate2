@@ -2,6 +2,7 @@
 import React from 'react';
 import { MapPin, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AuthDialog from './AuthDialog';
 
 const Header = () => {
   return (
@@ -14,10 +15,13 @@ const Header = () => {
             <p className="text-xs text-muted-foreground">123 Main St, City</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="sm" className="relative">
+            <Bell className="w-5 h-5" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+          </Button>
+          <AuthDialog />
+        </div>
       </div>
     </header>
   );

@@ -19,9 +19,16 @@ const RestaurantCard = ({ name, cuisine, rating, deliveryTime, image, onClick }:
       onClick={onClick}
     >
       <div className="relative h-32 bg-gradient-to-br from-orange-100 to-red-100">
-        <div className="absolute inset-0 flex items-center justify-center text-6xl">
-          🍕
-        </div>
+        <img 
+          src={image} 
+          alt={name}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            // Fallback to gradient background if image fails to load
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+          }}
+        />
         <div className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1">
           <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
           <span className="text-xs font-medium">{rating}</span>

@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock } from 'lucide-react';
+import QRPayment from './QRPayment';
 
 interface OrderCardProps {
   restaurantName: string;
@@ -61,12 +62,17 @@ const OrderCard = ({ restaurantName, items, status, estimatedTime, total }: Orde
         
         <div className="flex justify-between items-center">
           <span className="font-semibold">${total.toFixed(2)}</span>
-          {status !== 'delivered' && (
-            <Button size="sm" variant="outline" className="h-8">
-              <MapPin className="w-3 h-3 mr-1" />
-              Track
-            </Button>
-          )}
+          <div className="flex space-x-2">
+            {status !== 'delivered' && (
+              <>
+                <Button size="sm" variant="outline" className="h-8">
+                  <MapPin className="w-3 h-3 mr-1" />
+                  Track
+                </Button>
+                <QRPayment amount={total} orderId={`order-${Date.now()}`} />
+              </>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
