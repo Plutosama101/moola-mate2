@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock } from 'lucide-react';
-import QRPayment from './QRPayment';
+import QRScanner from './QRScanner';
 
 interface OrderCardProps {
   restaurantName: string;
@@ -79,7 +78,7 @@ const OrderCard = ({ restaurantName, items, status, estimatedTime, total, orderI
                   <MapPin className="w-3 h-3 mr-1" />
                   Track
                 </Button>
-                <QRPayment amount={total} orderId={uniqueOrderId} />
+                <QRScanner amount={total} orderId={uniqueOrderId} />
               </>
             )}
           </div>

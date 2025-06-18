@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
+import VendorAdmin from "./pages/VendorAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="orders" element={<Orders />} />
             <Route path="profile" element={<Profile />} />
           </Route>
+          <Route path="/vendor-admin" element={<VendorAdmin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
