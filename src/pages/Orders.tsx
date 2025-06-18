@@ -11,6 +11,7 @@ const Orders = () => {
       status: 'preparing' as const,
       estimatedTime: '25 mins',
       total: 24.99,
+      orderId: 'ORD-2024-001'
     },
     {
       restaurantName: 'Burger Junction',
@@ -18,6 +19,7 @@ const Orders = () => {
       status: 'on-the-way' as const,
       estimatedTime: '10 mins',
       total: 18.50,
+      orderId: 'ORD-2024-002'
     },
   ];
 
@@ -27,12 +29,14 @@ const Orders = () => {
       items: ['California Roll', 'Salmon Sashimi'],
       status: 'delivered' as const,
       total: 32.00,
+      orderId: 'ORD-2024-003'
     },
     {
       restaurantName: 'Sweet Dreams Bakery',
       items: ['Chocolate Cake', 'Coffee'],
       status: 'delivered' as const,
       total: 15.99,
+      orderId: 'ORD-2024-004'
     },
   ];
 

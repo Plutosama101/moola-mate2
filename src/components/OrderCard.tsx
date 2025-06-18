@@ -11,9 +11,13 @@ interface OrderCardProps {
   status: 'preparing' | 'on-the-way' | 'delivered';
   estimatedTime?: string;
   total: number;
+  orderId?: string;
 }
 
-const OrderCard = ({ restaurantName, items, status, estimatedTime, total }: OrderCardProps) => {
+const OrderCard = ({ restaurantName, items, status, estimatedTime, total, orderId }: OrderCardProps) => {
+  // Generate a unique order ID if not provided
+  const uniqueOrderId = orderId || `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'preparing':
@@ -38,6 +42,12 @@ const OrderCard = ({ restaurantName, items, status, estimatedTime, total }: Orde
       default:
         return 'Unknown';
     }
+  };
+
+  const handleTrackOrder = () => {
+    // In a real app, this would open a tracking interface
+    console.log('Tracking order:', uniqueOrderId);
+    alert(`Tracking order ${uniqueOrderId}. In a real app, this would show live tracking.`);
   };
 
   return (
@@ -65,11 +75,11 @@ const OrderCard = ({ restaurantName, items, status, estimatedTime, total }: Orde
           <div className="flex space-x-2">
             {status !== 'delivered' && (
               <>
-                <Button size="sm" variant="outline" className="h-8">
+                <Button size="sm" variant="outline" className="h-8" onClick={handleTrackOrder}>
                   <MapPin className="w-3 h-3 mr-1" />
                   Track
                 </Button>
-                <QRPayment amount={total} orderId={`order-${Date.now()}`} />
+                <QRPayment amount={total} orderId={uniqueOrderId} />
               </>
             )}
           </div>
