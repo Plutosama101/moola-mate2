@@ -7,11 +7,11 @@ import QrScanner from 'qr-scanner';
 import { useToast } from '@/hooks/use-toast';
 
 interface QRScannerProps {
-  amount: number;
-  orderId: string;
+  walletBalance: number;
+  onPaymentComplete: (amount: number) => void;
 }
 
-const QRScanner = ({ amount, orderId }: QRScannerProps) => {
+const QRScanner = ({ walletBalance, onPaymentComplete }: QRScannerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -62,13 +62,25 @@ const QRScanner = ({ amount, orderId }: QRScannerProps) => {
   const handlePaymentResult = (qrData: string) => {
     try {
       const paymentData = JSON.parse(qrData);
-      if (paymentData.type === 'payment' && paymentData.merchant) {
-        toast({
-          title: "Payment Successful!",
-          description: `Payment of $${amount.toFixed(2)} processed successfully.`,
-        });
-        stopScanning();
-        setIsOpen(false);
+      
+      if (paymentData.type === 'nigerian_food_payment' && paymentData.amount) {
+        const amount = paymentData.amount;
+        
+        if (walletBalance >= amount) {
+          onPaymentComplete(amount);
+          toast({
+            title: "Payment Successful!",
+            description: `₦${amount.toLocaleString()} paid for ${paymentData.foodName || 'food item'}`,
+          });
+          stopScanning();
+          setIsOpen(false);
+        } else {
+          toast({
+            title: "Insufficient Balance",
+            description: `You need ₦${(amount - walletBalance).toLocaleString()} more to complete this purchase`,
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Invalid QR Code",
@@ -100,9 +112,9 @@ const QRScanner = ({ amount, orderId }: QRScannerProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="h-8">
-          <Camera className="w-3 h-3 mr-1" />
-          Scan QR
+        <Button className="w-full bg-blue-600 hover:bg-blue-700">
+          <Camera className="w-4 h-4 mr-2" />
+          Scan QR to Pay
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
@@ -126,8 +138,7 @@ const QRScanner = ({ amount, orderId }: QRScannerProps) => {
           <p className="text-sm text-muted-foreground text-center">
             Point your camera at a vendor's payment QR code
           </p>
-          <p className="text-lg font-semibold">Amount: ${amount.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">Order ID: {orderId}</p>
+          <p className="text-lg font-semibold">Wallet Balance: ₦{walletBalance.toLocaleString()}</p>
           <Button
             variant="outline"
             size="sm"
