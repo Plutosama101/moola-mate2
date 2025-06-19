@@ -1,48 +1,63 @@
 
 import React from 'react';
-import { Star, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { Star, Clock } from 'lucide-react';
 
 interface RestaurantCardProps {
+  id?: string;
   name: string;
   cuisine: string;
   rating: number;
   deliveryTime: string;
   image: string;
-  onClick?: () => void;
+  specialty?: string;
 }
 
-const RestaurantCard = ({ name, cuisine, rating, deliveryTime, image, onClick }: RestaurantCardProps) => {
+const RestaurantCard = ({ id, name, cuisine, rating, deliveryTime, image, specialty }: RestaurantCardProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (id) {
+      navigate(`/restaurant/${id}`);
+    }
+  };
+
   return (
     <Card 
-      className="overflow-hidden shadow-soft hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-      onClick={onClick}
+      className={`shadow-soft overflow-hidden ${id ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''}`}
+      onClick={handleClick}
     >
-      <div className="relative h-32 bg-gradient-to-br from-orange-100 to-red-100">
+      <div className="aspect-video relative">
         <img 
           src={image} 
           alt={name}
           className="w-full h-full object-cover"
           onError={(e) => {
-            // Fallback to gradient background if image fails to load
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
+            e.currentTarget.src = `https://via.placeholder.com/400x300/10B981/ffffff?text=${encodeURIComponent(name)}`;
           }}
         />
-        <div className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1">
-          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-          <span className="text-xs font-medium">{rating}</span>
-        </div>
       </div>
-      <CardContent className="p-3">
-        <h3 className="font-semibold text-sm mb-1">{name}</h3>
-        <p className="text-xs text-muted-foreground mb-2">{cuisine}</p>
+      <CardContent className="p-4">
+        <h3 className="font-semibold text-lg mb-1">{name}</h3>
+        <p className="text-sm text-muted-foreground mb-2">{cuisine}</p>
+        {specialty && (
+          <p className="text-xs text-green-600 mb-2">{specialty}</p>
+        )}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1">
-            <Clock className="w-3 h-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{deliveryTime}</span>
+          <div className="flex items-center space-x-3 text-sm text-muted-foreground">
+            <div className="flex items-center space-x-1">
+              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              <span>{rating}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Clock className="w-4 h-4" />
+              <span>{deliveryTime}</span>
+            </div>
           </div>
-          <span className="text-xs text-primary font-medium">Free delivery</span>
+          {id && (
+            <span className="text-xs text-primary font-medium">View Menu →</span>
+          )}
         </div>
       </CardContent>
     </Card>
