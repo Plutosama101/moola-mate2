@@ -7,6 +7,9 @@ import { useUser } from '@/contexts/UserContext';
 const Header = () => {
   const { user, logout } = useUser();
 
+  // Get user name from metadata or fall back to email
+  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'User';
+
   return (
     <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-background/95 backdrop-blur-sm border-b border-border z-50">
       <div className="px-4 py-3 flex items-center justify-between">
@@ -16,7 +19,7 @@ const Header = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-orange-600">SnappyEats</p>
-            <p className="text-xs text-muted-foreground">Welcome {user?.name}</p>
+            <p className="text-xs text-muted-foreground">Welcome {userName}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
