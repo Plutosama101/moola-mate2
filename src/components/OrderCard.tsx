@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock } from 'lucide-react';
 import QRScanner from './QRScanner';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderCardProps {
   restaurantName: string;
@@ -14,8 +16,13 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({ restaurantName, items, status, estimatedTime, total, orderId }: OrderCardProps) => {
+  const { toast } = useToast();
+  
   // Generate a unique order ID if not provided
   const uniqueOrderId = orderId || `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  // Get wallet balance from localStorage (default to 5000)
+  const walletBalance = parseFloat(localStorage.getItem('nigerianWallet') || '5000');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -46,7 +53,21 @@ const OrderCard = ({ restaurantName, items, status, estimatedTime, total, orderI
   const handleTrackOrder = () => {
     // In a real app, this would open a tracking interface
     console.log('Tracking order:', uniqueOrderId);
-    alert(`Tracking order ${uniqueOrderId}. In a real app, this would show live tracking.`);
+    toast({
+      title: "Order Tracking",
+      description: `Tracking order ${uniqueOrderId}. In a real app, this would show live tracking.`,
+    });
+  };
+
+  const handlePaymentComplete = (amount: number) => {
+    // Update wallet balance
+    const newBalance = walletBalance - amount;
+    localStorage.setItem('nigerianWallet', newBalance.toString());
+    
+    toast({
+      title: "Payment Successful!",
+      description: `₦${amount.toLocaleString()} paid for order ${uniqueOrderId}`,
+    });
   };
 
   return (
@@ -70,7 +91,7 @@ const OrderCard = ({ restaurantName, items, status, estimatedTime, total, orderI
         )}
         
         <div className="flex justify-between items-center">
-          <span className="font-semibold">${total.toFixed(2)}</span>
+          <span className="font-semibold">₦{total.toFixed(2)}</span>
           <div className="flex space-x-2">
             {status !== 'delivered' && (
               <>
@@ -78,7 +99,10 @@ const OrderCard = ({ restaurantName, items, status, estimatedTime, total, orderI
                   <MapPin className="w-3 h-3 mr-1" />
                   Track
                 </Button>
-                <QRScanner amount={total} orderId={uniqueOrderId} />
+                <QRScanner 
+                  walletBalance={walletBalance}
+                  onPaymentComplete={handlePaymentComplete}
+                />
               </>
             )}
           </div>
