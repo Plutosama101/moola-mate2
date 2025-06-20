@@ -74,7 +74,7 @@ const StudentDashboard = () => {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input 
-          placeholder="Search for Nigerian restaurants or dishes..." 
+          placeholder="Search restaurants or dishes..." 
           className="pl-10 bg-background/50 backdrop-blur-sm"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -82,21 +82,21 @@ const StudentDashboard = () => {
       </div>
 
       {/* Promotional Banner */}
-      <div className="gradient-primary rounded-xl p-6 text-white">
-        <h2 className="text-xl font-bold mb-2">Welcome Student! 🎓</h2>
-        <p className="text-white/90 text-sm">Scan QR codes to pay for authentic Nigerian cuisine</p>
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-6 text-white">
+        <h2 className="text-xl font-bold mb-2">Welcome to SnappyEats! 🍽️</h2>
+        <p className="text-white/90 text-sm">Quick, easy, and delicious meals at your fingertips</p>
       </div>
 
       {/* Categories */}
       <div>
-        <h3 className="font-semibold mb-3">Browse Nigerian Food Categories</h3>
+        <h3 className="font-semibold mb-3">Food Categories</h3>
         <div className="flex overflow-x-auto space-x-3 pb-2 scrollbar-hide">
           {nigerianFoodCategories.map((category) => (
             <div 
               key={category.name}
               onClick={() => handleCategoryClick(category.name)}
               className={`cursor-pointer transition-all ${
-                selectedCategory === category.name ? 'ring-2 ring-primary' : ''
+                selectedCategory === category.name ? 'ring-2 ring-orange-500' : ''
               }`}
             >
               <CategoryCard {...category} />
@@ -108,7 +108,7 @@ const StudentDashboard = () => {
             Showing restaurants with {selectedCategory} • 
             <button 
               onClick={() => setSelectedCategory('')}
-              className="text-primary hover:underline ml-1"
+              className="text-orange-600 hover:underline ml-1"
             >
               Clear filter
             </button>
@@ -116,10 +116,10 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      {/* Nigerian Restaurants */}
+      {/* Restaurants */}
       <div>
         <h3 className="font-semibold mb-3">
-          {selectedCategory ? `${selectedCategory} Restaurants` : 'Nigerian Restaurants Near You'}
+          {selectedCategory ? `${selectedCategory} Restaurants` : 'Featured Restaurants'}
         </h3>
         <div className="grid grid-cols-1 gap-4">
           {filteredRestaurants.length > 0 ? (
@@ -132,7 +132,7 @@ const StudentDashboard = () => {
               {selectedCategory && (
                 <button 
                   onClick={() => setSelectedCategory('')}
-                  className="text-primary hover:underline mt-2"
+                  className="text-orange-600 hover:underline mt-2"
                 >
                   View all restaurants
                 </button>

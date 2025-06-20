@@ -14,20 +14,26 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import RestaurantDetail from "./pages/RestaurantDetail";
 import RoleSelection from "./components/RoleSelection";
+import AuthDialog from "./components/AuthDialog";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { role } = useUser();
+  const { user, isAuthenticated, showAuthDialog, setShowAuthDialog } = useUser();
 
-  if (!role) {
-    return <RoleSelection />;
+  if (!isAuthenticated) {
+    return (
+      <>
+        <RoleSelection />
+        <AuthDialog isOpen={showAuthDialog} onClose={() => setShowAuthDialog(false)} />
+      </>
+    );
   }
 
   return (
     <BrowserRouter>
       <Routes>
-        {role === 'student' ? (
+        {user?.role === 'student' ? (
           <Route path="/" element={<Layout />}>
             <Route index element={<StudentDashboard />} />
             <Route path="search" element={<Search />} />

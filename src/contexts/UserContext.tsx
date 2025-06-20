@@ -18,6 +18,8 @@ interface UserContextType {
   setRole: (role: UserRole) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  showAuthDialog: boolean;
+  setShowAuthDialog: (show: boolean) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -25,14 +27,18 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   useEffect(() => {
     const savedUser = storage.getItem('user');
     const savedRole = storage.getItem('userRole');
     if (savedUser && savedRole) {
       try {
-        setUser(JSON.parse(savedUser));
-        setRole(savedRole as UserRole);
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser && parsedUser.email) {
+          setUser(parsedUser);
+          setRole(savedRole as UserRole);
+        }
       } catch (error) {
         console.error('Error loading user data:', error);
       }
@@ -64,6 +70,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     storage.setItem('user', '');
     storage.setItem('userRole', '');
     storage.setItem('nigerianWallet', '5000');
+    setShowAuthDialog(false);
   };
 
   return (
@@ -73,7 +80,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setUser: handleSetUser,
       setRole: handleSetRole,
       logout,
-      isAuthenticated: !!user
+      isAuthenticated: !!user && !!user.email,
+      showAuthDialog,
+      setShowAuthDialog
     }}>
       {children}
     </UserContext.Provider>

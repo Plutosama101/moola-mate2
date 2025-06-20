@@ -31,13 +31,13 @@ export const nigerianFoodCategories = [
 
 export const nigerianRestaurants: NigerianRestaurant[] = [
   {
-    id: 'mama-put-1',
-    name: "Mama Ngozi's Kitchen",
+    id: 'abula-spot',
+    name: "Abula Spot",
     cuisine: 'Nigerian • Traditional',
     rating: 4.8,
     deliveryTime: '20-30 min',
     image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop',
-    specialty: 'Authentic Nigerian Home Cooking',
+    specialty: 'Authentic Abula & Rice Dishes',
     foods: [
       {
         id: '1',
@@ -46,7 +46,7 @@ export const nigerianRestaurants: NigerianRestaurant[] = [
         image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&h=300&fit=crop',
         category: 'Rice Dishes',
         description: 'Perfectly spiced Jollof rice with tender grilled chicken',
-        restaurant: "Mama Ngozi's Kitchen"
+        restaurant: "Abula Spot"
       },
       {
         id: '2',
@@ -55,112 +55,123 @@ export const nigerianRestaurants: NigerianRestaurant[] = [
         image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
         category: 'Swallow',
         description: 'Fresh pounded yam with rich egusi soup and assorted meat',
-        restaurant: "Mama Ngozi's Kitchen"
-      },
-      {
-        id: '6',
-        name: 'Efo Riro',
-        price: 700,
-        image: 'https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400&h=300&fit=crop',
-        category: 'Soups & Stews',
-        description: 'Delicious spinach stew with assorted meat and fish',
-        restaurant: "Mama Ngozi's Kitchen"
+        restaurant: "Abula Spot"
       }
     ]
   },
   {
-    id: 'suya-spot',
-    name: 'Abuja Suya Spot',
+    id: 'attees',
+    name: 'Attees',
     cuisine: 'Nigerian • Grilled',
     rating: 4.6,
     deliveryTime: '15-25 min',
     image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop',
-    specialty: 'Best Suya in Town',
+    specialty: 'Premium Grilled Meals',
     foods: [
       {
-        id: '9',
+        id: '3',
         name: 'Beef Suya',
         price: 500,
         image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop',
         category: 'Grilled',
         description: 'Spicy grilled beef skewers with suya spice',
-        restaurant: 'Abuja Suya Spot'
+        restaurant: 'Attees'
       },
       {
-        id: '10',
+        id: '4',
         name: 'Chicken Suya',
         price: 600,
         image: 'https://images.unsplash.com/photo-1598515213692-d872febc8eda?w=400&h=300&fit=crop',
         category: 'Grilled',
         description: 'Tender grilled chicken with traditional suya seasoning',
-        restaurant: 'Abuja Suya Spot'
+        restaurant: 'Attees'
       }
     ]
   },
   {
-    id: 'snack-palace',
-    name: 'Lagos Snack Palace',
+    id: 'stomach-option',
+    name: 'Stomach Option',
     cuisine: 'Nigerian • Snacks',
     rating: 4.4,
     deliveryTime: '10-20 min',
     image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop',
-    specialty: 'Fresh Nigerian Snacks Daily',
+    specialty: 'Quick Bites & Snacks',
     foods: [
       {
-        id: '3',
+        id: '5',
         name: 'Moi Moi',
         price: 300,
         image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&h=300&fit=crop',
         category: 'Snacks',
         description: 'Steamed bean pudding with eggs and fish',
-        restaurant: 'Lagos Snack Palace'
+        restaurant: 'Stomach Option'
       },
       {
-        id: '4',
+        id: '6',
         name: 'Fried Plantain',
         price: 400,
         image: 'https://images.unsplash.com/photo-1571506165871-899d4d226cd7?w=400&h=300&fit=crop',
         category: 'Snacks',
         description: 'Sweet fried plantain slices, perfectly golden',
-        restaurant: 'Lagos Snack Palace'
-      },
-      {
-        id: '5',
-        name: 'Puff Puff',
-        price: 200,
-        image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
-        category: 'Snacks',
-        description: 'Deep-fried dough balls, soft and fluffy',
-        restaurant: 'Lagos Snack Palace'
+        restaurant: 'Stomach Option'
       }
     ]
   },
   {
-    id: 'drink-hub',
-    name: 'Refreshing Naija Drinks',
+    id: 'zoey',
+    name: 'Zoey',
     cuisine: 'Nigerian • Beverages',
     rating: 4.3,
     deliveryTime: '5-15 min',
     image: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=300&fit=crop',
-    specialty: 'Fresh Local Drinks',
+    specialty: 'Fresh Drinks & Smoothies',
     foods: [
       {
         id: '7',
-        name: 'Bottled Water',
-        price: 150,
-        image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop',
-        category: 'Drinks',
-        description: 'Pure bottled water, ice cold',
-        restaurant: 'Refreshing Naija Drinks'
-      },
-      {
-        id: '8',
         name: 'Zobo Drink',
         price: 250,
         image: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=400&h=300&fit=crop',
         category: 'Drinks',
         description: 'Refreshing hibiscus drink with natural spices',
-        restaurant: 'Refreshing Naija Drinks'
+        restaurant: 'Zoey'
+      },
+      {
+        id: '8',
+        name: 'Bottled Water',
+        price: 150,
+        image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop',
+        category: 'Drinks',
+        description: 'Pure bottled water, ice cold',
+        restaurant: 'Zoey'
+      }
+    ]
+  },
+  {
+    id: 'italian-hut',
+    name: 'Italian Hut',
+    cuisine: 'Italian • Fusion',
+    rating: 4.5,
+    deliveryTime: '25-35 min',
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop',
+    specialty: 'Italian-Nigerian Fusion',
+    foods: [
+      {
+        id: '9',
+        name: 'Jollof Pasta',
+        price: 900,
+        image: 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop',
+        category: 'Rice Dishes',
+        description: 'Italian pasta with Nigerian Jollof spices',
+        restaurant: 'Italian Hut'
+      },
+      {
+        id: '10',
+        name: 'Pepperoni Pizza',
+        price: 1200,
+        image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
+        category: 'Snacks',
+        description: 'Classic pepperoni pizza with Nigerian pepper twist',
+        restaurant: 'Italian Hut'
       }
     ]
   }
