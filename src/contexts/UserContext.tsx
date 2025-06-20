@@ -1,88 +1,105 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { storage } from '@/components/NigerianWallet';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
 export type UserRole = 'student' | 'vendor' | null;
 
-interface User {
-  id: string;
-  email: string;
-  role: UserRole;
-  name: string;
-}
-
 interface UserContextType {
   user: User | null;
+  session: Session | null;
   role: UserRole;
-  setUser: (user: User | null) => void;
   setRole: (role: UserRole) => void;
   logout: () => void;
   isAuthenticated: boolean;
   showAuthDialog: boolean;
   setShowAuthDialog: (show: boolean) => void;
+  loading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = storage.getItem('user');
-    const savedRole = storage.getItem('userRole');
-    if (savedUser && savedRole) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        if (parsedUser && parsedUser.email) {
-          setUser(parsedUser);
-          setRole(savedRole as UserRole);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed:', event, session);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        // Load role from localStorage when user is authenticated
+        if (session?.user) {
+          const savedRole = localStorage.getItem('userRole') as UserRole;
+          if (savedRole) {
+            setRole(savedRole);
+          }
+        } else {
+          setRole(null);
+          localStorage.removeItem('userRole');
         }
-      } catch (error) {
-        console.error('Error loading user data:', error);
       }
-    }
-  }, []);
+    );
 
-  const handleSetUser = (newUser: User | null) => {
-    setUser(newUser);
-    if (newUser) {
-      storage.setItem('user', JSON.stringify(newUser));
-      setRole(newUser.role);
-      storage.setItem('userRole', newUser.role || '');
-    }
-  };
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      
+      if (session?.user) {
+        const savedRole = localStorage.getItem('userRole') as UserRole;
+        if (savedRole) {
+          setRole(savedRole);
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSetRole = (newRole: UserRole) => {
     setRole(newRole);
-    storage.setItem('userRole', newRole || '');
-    if (user) {
-      const updatedUser = { ...user, role: newRole };
-      setUser(updatedUser);
-      storage.setItem('user', JSON.stringify(updatedUser));
+    if (newRole) {
+      localStorage.setItem('userRole', newRole);
+    } else {
+      localStorage.removeItem('userRole');
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setRole(null);
-    storage.setItem('user', '');
-    storage.setItem('userRole', '');
-    storage.setItem('nigerianWallet', '5000');
-    setShowAuthDialog(false);
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+      setRole(null);
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('nigerianWallet');
+      localStorage.setItem('nigerianWallet', '5000');
+      setShowAuthDialog(false);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   return (
     <UserContext.Provider value={{
       user,
+      session,
       role,
-      setUser: handleSetUser,
       setRole: handleSetRole,
       logout,
-      isAuthenticated: !!user && !!user.email,
+      isAuthenticated: !!user,
       showAuthDialog,
-      setShowAuthDialog
+      setShowAuthDialog,
+      loading
     }}>
       {children}
     </UserContext.Provider>

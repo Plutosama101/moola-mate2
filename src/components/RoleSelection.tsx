@@ -6,19 +6,10 @@ import { GraduationCap, Store } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 const RoleSelection = () => {
-  const { setRole, setUser } = useUser();
+  const { setShowAuthDialog } = useUser();
 
   const handleRoleSelect = (selectedRole: 'student' | 'vendor') => {
-    // Create a mock user for demo purposes
-    const mockUser = {
-      id: Date.now().toString(),
-      email: `${selectedRole}@example.com`,
-      role: selectedRole,
-      name: selectedRole === 'student' ? 'Student User' : 'Vendor User'
-    };
-    
-    setUser(mockUser);
-    setRole(selectedRole);
+    setShowAuthDialog(true);
   };
 
   return (
@@ -26,7 +17,7 @@ const RoleSelection = () => {
       <div className="w-full max-w-sm mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-orange-600 mb-2">Welcome to SnappyEats 🍽️</h1>
-          <p className="text-gray-600">Choose your role to continue</p>
+          <p className="text-gray-600">Choose your role to get started</p>
         </div>
 
         <div className="space-y-4">

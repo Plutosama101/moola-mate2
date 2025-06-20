@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthDialogProps {
   isOpen: boolean;
@@ -19,46 +20,77 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState<'student' | 'vendor'>('student');
-  const { setUser } = useUser();
+  const [loading, setLoading] = useState(false);
+  const { setRole: setUserRole } = useUser();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple mock authentication
-    if (email && password) {
-      const user = {
-        id: Date.now().toString(),
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        role,
-        name: email.split('@')[0]
-      };
-      setUser(user);
+        password,
+      });
+
+      if (error) throw error;
+
+      // Set the role after successful login
+      setUserRole(role);
+      
       toast({
         title: "Login Successful!",
         description: `Welcome back to SnappyEats!`,
       });
       onClose();
       resetForm();
+    } catch (error: any) {
+      toast({
+        title: "Login Error",
+        description: error.message || "Failed to log in",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple mock registration
-    if (email && password && name) {
-      const user = {
-        id: Date.now().toString(),
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signUp({
         email,
-        role,
-        name
-      };
-      setUser(user);
+        password,
+        options: {
+          data: {
+            name: name,
+            role: role,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // Set the role after successful signup
+      setUserRole(role);
+      
       toast({
         title: "Account Created!",
-        description: `Welcome to SnappyEats, ${name}!`,
+        description: `Welcome to SnappyEats, ${name}! You can start using the app right away.`,
       });
       onClose();
       resetForm();
+    } catch (error: any) {
+      toast({
+        title: "Signup Error",
+        description: error.message || "Failed to create account",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,6 +98,7 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
     setEmail('');
     setPassword('');
     setName('');
+    setLoading(false);
   };
 
   return (
@@ -110,8 +143,35 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700">
-                    Login
+                  <div className="space-y-2">
+                    <Label>Account Type</Label>
+                    <div className="flex space-x-4">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          value="student"
+                          checked={role === 'student'}
+                          onChange={(e) => setRole(e.target.value as 'student' | 'vendor')}
+                        />
+                        <span>Student</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          value="vendor"
+                          checked={role === 'vendor'}
+                          onChange={(e) => setRole(e.target.value as 'student' | 'vendor')}
+                        />
+                        <span>Vendor</span>
+                      </label>
+                    </div>
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    disabled={loading}
+                  >
+                    {loading ? 'Logging in...' : 'Login'}
                   </Button>
                 </form>
               </CardContent>
@@ -154,8 +214,9 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Create a password"
+                      placeholder="Create a password (min 6 characters)"
                       required
+                      minLength={6}
                     />
                   </div>
                   <div className="space-y-2">
@@ -181,8 +242,12 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
                       </label>
                     </div>
                   </div>
-                  <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700">
-                    Create Account
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    disabled={loading}
+                  >
+                    {loading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 </form>
               </CardContent>

@@ -19,9 +19,22 @@ import AuthDialog from "./components/AuthDialog";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { user, isAuthenticated, showAuthDialog, setShowAuthDialog } = useUser();
+  const { user, role, isAuthenticated, showAuthDialog, setShowAuthDialog, loading } = useUser();
 
-  if (!isAuthenticated) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <span className="text-white font-bold text-sm">S</span>
+          </div>
+          <p className="text-orange-600 font-semibold">Loading SnappyEats...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !role) {
     return (
       <>
         <RoleSelection />
@@ -33,7 +46,7 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {user?.role === 'student' ? (
+        {role === 'student' ? (
           <Route path="/" element={<Layout />}>
             <Route index element={<StudentDashboard />} />
             <Route path="search" element={<Search />} />
