@@ -1,66 +1,164 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Clock, Star, Heart, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-interface RestaurantCardProps {
-  id?: string;
+interface Food {
+  id: string;
   name: string;
-  cuisine: string;
-  rating: number;
-  deliveryTime: string;
+  price: number;
+  description: string;
+  category: string;
   image: string;
-  specialty?: string;
 }
 
-const RestaurantCard = ({ id, name, cuisine, rating, deliveryTime, image, specialty }: RestaurantCardProps) => {
-  const navigate = useNavigate();
+interface RestaurantCardProps {
+  id: string;
+  name: string;
+  image: string;
+  rating: number;
+  deliveryTime: string;
+  cuisine: string;
+  foods: Food[];
+  onAddToCart?: (restaurantId: string, foodId: string, name: string, price: number) => void;
+  onToggleFavorite?: () => void;
+  isFavorite?: boolean;
+}
 
-  const handleClick = () => {
-    if (id) {
-      navigate(`/restaurant/${id}`);
+const RestaurantCard = ({ 
+  id, 
+  name, 
+  image, 
+  rating, 
+  deliveryTime, 
+  cuisine, 
+  foods,
+  onAddToCart,
+  onToggleFavorite,
+  isFavorite = false
+}: RestaurantCardProps) => {
+  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+
+  const handleAddToCart = (food: Food) => {
+    if (onAddToCart) {
+      onAddToCart(id, food.id, food.name, food.price);
     }
   };
 
   return (
-    <Card 
-      className={`shadow-soft overflow-hidden ${id ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''}`}
-      onClick={handleClick}
-    >
-      <div className="aspect-video relative">
-        <img 
-          src={image} 
-          alt={name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = `https://via.placeholder.com/400x300/10B981/ffffff?text=${encodeURIComponent(name)}`;
-          }}
-        />
-      </div>
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-1">{name}</h3>
-        <p className="text-sm text-muted-foreground mb-2">{cuisine}</p>
-        {specialty && (
-          <p className="text-xs text-green-600 mb-2">{specialty}</p>
-        )}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 text-sm text-muted-foreground">
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span>{rating}</span>
+    <>
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <CardContent className="p-0">
+          <div className="relative">
+            <img 
+              src={image} 
+              alt={name}
+              className="w-full h-48 object-cover"
+            />
+            <div className="absolute top-2 right-2 flex space-x-2">
+              {onToggleFavorite && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="bg-white/80 hover:bg-white"
+                  onClick={onToggleFavorite}
+                >
+                  <Heart 
+                    className={`w-4 h-4 ${
+                      isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-500'
+                    }`} 
+                  />
+                </Button>
+              )}
             </div>
-            <div className="flex items-center space-x-1">
-              <Clock className="w-4 h-4" />
-              <span>{deliveryTime}</span>
+            <div className="absolute bottom-2 left-2">
+              <Badge className="bg-white/90 text-gray-800">
+                <Star className="w-3 h-3 mr-1 fill-yellow-400 text-yellow-400" />
+                {rating}
+              </Badge>
             </div>
           </div>
-          {id && (
-            <span className="text-xs text-primary font-medium">View Menu →</span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          
+          <div className="p-4">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <h3 className="font-semibold text-lg">{name}</h3>
+                <p className="text-sm text-muted-foreground">{cuisine}</p>
+              </div>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Clock className="w-4 h-4 mr-1" />
+                {deliveryTime}
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <div className="flex flex-wrap gap-1">
+                {foods.slice(0, 3).map((food) => (
+                  <Badge key={food.id} variant="secondary" className="text-xs">
+                    {food.name}
+                  </Badge>
+                ))}
+                {foods.length > 3 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{foods.length - 3} more
+                  </Badge>
+                )}
+              </div>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                    View Menu
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>{name} Menu</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4 mt-4">
+                    {foods.map((food) => (
+                      <Card key={food.id}>
+                        <CardContent className="p-4">
+                          <div className="flex space-x-3">
+                            <img 
+                              src={food.image} 
+                              alt={food.name}
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                            <div className="flex-1">
+                              <h4 className="font-medium">{food.name}</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {food.description}
+                              </p>
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="font-semibold text-orange-600">
+                                  ₦{food.price.toLocaleString()}
+                                </span>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleAddToCart(food)}
+                                >
+                                  <Plus className="w-3 h-3 mr-1" />
+                                  Add
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </>
   );
 };
 
