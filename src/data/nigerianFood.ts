@@ -36,14 +36,14 @@ export const nigerianRestaurants: NigerianRestaurant[] = [
     cuisine: 'Nigerian • Traditional',
     rating: 4.8,
     deliveryTime: '20-30 min',
-    image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&h=300&fit=crop',
     specialty: 'Authentic Abula & Rice Dishes',
     foods: [
       {
         id: '1',
         name: 'Jollof Rice + Chicken',
         price: 800,
-        image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&h=300&fit=crop',
+        image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop',
         category: 'Rice Dishes',
         description: 'Perfectly spiced Jollof rice with tender grilled chicken',
         restaurant: "Abula Spot"
@@ -65,7 +65,7 @@ export const nigerianRestaurants: NigerianRestaurant[] = [
     cuisine: 'Nigerian • Grilled',
     rating: 4.6,
     deliveryTime: '15-25 min',
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop',
     specialty: 'Premium Grilled Meals',
     foods: [
       {
@@ -101,7 +101,7 @@ export const nigerianRestaurants: NigerianRestaurant[] = [
         id: '5',
         name: 'Moi Moi',
         price: 300,
-        image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&h=300&fit=crop',
+        image: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=400&h=300&fit=crop',
         category: 'Snacks',
         description: 'Steamed bean pudding with eggs and fish',
         restaurant: 'Stomach Option'
@@ -168,7 +168,7 @@ export const nigerianRestaurants: NigerianRestaurant[] = [
         id: '10',
         name: 'Pepperoni Pizza',
         price: 1200,
-        image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
+        image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop',
         category: 'Snacks',
         description: 'Classic pepperoni pizza with Nigerian pepper twist',
         restaurant: 'Italian Hut'

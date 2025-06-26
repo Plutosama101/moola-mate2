@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
@@ -6,6 +5,7 @@ import CategoryCard from '@/components/CategoryCard';
 import RestaurantCard from '@/components/RestaurantCard';
 import NigerianWallet, { storage } from '@/components/NigerianWallet';
 import QRScanner from '@/components/QRScanner';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { nigerianFoodCategories, nigerianRestaurants } from '@/data/nigerianFood';
 import { useToast } from '@/hooks/use-toast';
 
@@ -56,6 +56,9 @@ const StudentDashboard = () => {
 
   return (
     <div className="px-4 space-y-6">
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
+
       {/* Nigerian Wallet */}
       <NigerianWallet 
         balance={walletBalance} 
