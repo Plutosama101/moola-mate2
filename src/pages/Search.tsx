@@ -4,33 +4,32 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search as SearchIcon, Filter } from 'lucide-react';
 import RestaurantCard from '@/components/RestaurantCard';
+import { nigerianRestaurants } from '@/data/nigerianFood';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
-  const restaurants = [
-    {
-      name: "Tony's Pizza Palace",
-      cuisine: 'Italian • Pizza',
-      rating: 4.8,
-      deliveryTime: '25-35 min',
-      image: '/placeholder.svg',
-    },
-    {
-      name: 'Burger Junction',
-      cuisine: 'American • Burgers',
-      rating: 4.6,
-      deliveryTime: '30-40 min',
-      image: '/placeholder.svg',
-    },
-    {
-      name: 'Sakura Sushi',
-      cuisine: 'Japanese • Sushi',
-      rating: 4.9,
-      deliveryTime: '20-30 min',
-      image: '/placeholder.svg',
-    },
-  ];
+  const handleAddToCart = (restaurantId: string, foodId: string, name: string, price: number) => {
+    console.log('Adding to cart:', { restaurantId, foodId, name, price });
+    // This would integrate with the cart system
+  };
+
+  const handleToggleFavorite = (restaurantId: string) => {
+    setFavoriteIds(prev => 
+      prev.includes(restaurantId) 
+        ? prev.filter(id => id !== restaurantId)
+        : [...prev, restaurantId]
+    );
+  };
+
+  const filteredRestaurants = nigerianRestaurants.filter(restaurant =>
+    restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    restaurant.foods.some(food => 
+      food.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
 
   return (
     <div className="px-4 space-y-4">
@@ -55,13 +54,28 @@ const Search = () => {
         </h2>
         
         <div className="grid grid-cols-1 gap-4">
-          {restaurants.map((restaurant) => (
+          {filteredRestaurants.map((restaurant) => (
             <RestaurantCard
-              key={restaurant.name}
-              {...restaurant}
+              key={restaurant.id}
+              id={restaurant.id}
+              name={restaurant.name}
+              image={restaurant.image}
+              rating={restaurant.rating}
+              deliveryTime={restaurant.deliveryTime}
+              cuisine={restaurant.cuisine}
+              foods={restaurant.foods}
+              onAddToCart={handleAddToCart}
+              onToggleFavorite={() => handleToggleFavorite(restaurant.id)}
+              isFavorite={favoriteIds.includes(restaurant.id)}
             />
           ))}
         </div>
+        
+        {filteredRestaurants.length === 0 && searchQuery && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No restaurants found for "{searchQuery}"</p>
+          </div>
+        )}
       </div>
     </div>
   );
