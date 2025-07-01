@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import CategoryCard from '@/components/CategoryCard';
 import RestaurantCard from '@/components/RestaurantCard';
-import NigerianWallet, { storage } from '@/components/NigerianWallet';
+import NigerianWallet from '@/components/NigerianWallet';
+import { storage } from '@/utils/storage';
 import { nigerianFoodCategories, nigerianRestaurants, getAllNigerianFoods, getFoodsByCategory } from '@/data/nigerianFood';
 
 const Home = () => {

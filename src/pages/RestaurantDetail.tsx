@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Star, Clock, MapPin } from 'lucide-react';
 import { nigerianRestaurants, NigerianRestaurant, NigerianFood } from '@/data/nigerianFood';
 import NigerianQRPayment from '@/components/NigerianQRPayment';
-import { storage } from '@/components/NigerianWallet';
+import { storage } from '@/utils/storage';
 
 const RestaurantDetail = () => {
   const { id } = useParams<{ id: string }>();
