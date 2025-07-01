@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Plus, Wallet, Receipt } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PaystackPayment from './PaystackPayment';
 import DownloadableReceipt from './DownloadableReceipt';
-import { storage } from './NigerianWallet';
+import { storage } from '@/utils/storage';
 
 interface PaymentHistory {
   id: string;
@@ -156,4 +155,3 @@ const NigerianWallet = ({ balance, onBalanceChange }: NigerianWalletProps) => {
 };
 
 export default NigerianWallet;
-export { storage };

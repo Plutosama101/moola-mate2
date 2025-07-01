@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { QrCode } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { NigerianFood } from '@/data/nigerianFood';
-import { storage } from './NigerianWallet';
+import { storage } from '@/utils/storage';
 
 interface NigerianQRPaymentProps {
   food: NigerianFood;
