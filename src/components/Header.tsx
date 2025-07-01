@@ -1,14 +1,29 @@
 
 import React from 'react';
-import { MapPin, Bell, LogOut, User, Store } from 'lucide-react';
+import { Bell, LogOut, User, Store, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/contexts/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const { user, role, logout } = useUser();
+  const navigate = useNavigate();
 
   // Get user name from metadata or fall back to email
   const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'User';
+
+  const handleProfileClick = () => {
+    if (role === 'student') {
+      navigate('/profile');
+    }
+  };
+
+  const handleWalletClick = () => {
+    if (role === 'student') {
+      // Navigate to wallet tab in student dashboard
+      navigate('/?tab=wallet');
+    }
+  };
 
   return (
     <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-background/95 backdrop-blur-sm border-b border-border z-50">
@@ -34,12 +49,17 @@ const Header = () => {
         </div>
         <div className="flex items-center space-x-2">
           {role === 'student' && (
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-600 rounded-full"></span>
-            </Button>
+            <>
+              <Button variant="ghost" size="sm" className="relative">
+                <Bell className="w-5 h-5" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-600 rounded-full"></span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleWalletClick}>
+                <Wallet className="w-5 h-5" />
+              </Button>
+            </>
           )}
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleProfileClick}>
             <User className="w-5 h-5" />
           </Button>
           <Button variant="ghost" size="sm" onClick={logout}>

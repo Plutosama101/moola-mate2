@@ -46,17 +46,19 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {role === 'student' ? (
-          <Route path="/" element={<Layout />}>
-            <Route index element={<StudentDashboard />} />
-            <Route path="search" element={<Search />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="restaurant/:id" element={<RestaurantDetail />} />
-          </Route>
-        ) : (
-          <Route path="/" element={<VendorDashboard />} />
-        )}
+        <Route path="/" element={<Layout />}>
+          {role === 'student' ? (
+            <>
+              <Route index element={<StudentDashboard />} />
+              <Route path="search" element={<Search />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="restaurant/:id" element={<RestaurantDetail />} />
+            </>
+          ) : (
+            <Route index element={<VendorDashboard />} />
+          )}
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

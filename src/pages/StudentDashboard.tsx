@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,8 +13,10 @@ import CartSidebar from '@/components/CartSidebar';
 import FavoriteRestaurants from '@/components/FavoriteRestaurants';
 import NotificationSystem, { Notification } from '@/components/NotificationSystem';
 import DeliveryTracking from '@/components/DeliveryTracking';
+import DownloadableReceipt from '@/components/DownloadableReceipt';
 import { nigerianFoodCategories, nigerianRestaurants } from '@/data/nigerianFood';
 import { useToast } from '@/hooks/use-toast';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface CartItem {
   id: string;
@@ -35,6 +36,15 @@ interface Order {
   timestamp: number;
 }
 
+interface PaymentHistory {
+  id: string;
+  type: 'wallet_topup' | 'food_order';
+  amount: number;
+  reference: string;
+  timestamp: number;
+  customerEmail?: string;
+}
+
 const StudentDashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,8 +53,32 @@ const StudentDashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [activeTab, setActiveTab] = useState('home');
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Get initial tab from URL params
+  const searchParams = new URLSearchParams(location.search);
+  const initialTab = searchParams.get('tab') || 'home';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Update tab when URL changes
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab') || 'home';
+    setActiveTab(tab);
+  }, [location.search]);
+
+  // Update URL when tab changes
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    if (tab === 'home') {
+      navigate('/', { replace: true });
+    } else {
+      navigate(`/?tab=${tab}`, { replace: true });
+    }
+  };
 
   // Initialize data from localStorage
   useEffect(() => {
@@ -91,6 +125,16 @@ const StudentDashboard = () => {
       }
     }
 
+    // Load payment history
+    const savedHistory = storage.getItem('paymentHistory');
+    if (savedHistory) {
+      try {
+        setPaymentHistory(JSON.parse(savedHistory));
+      } catch {
+        setPaymentHistory([]);
+      }
+    }
+
     // Initialize sample notifications
     const sampleNotifications: Notification[] = [
       {
@@ -127,6 +171,11 @@ const StudentDashboard = () => {
   const saveFavorites = (favorites: string[]) => {
     setFavoriteIds(favorites);
     storage.setItem('favoriteRestaurants', JSON.stringify(favorites));
+  };
+
+  const savePaymentHistory = (history: PaymentHistory[]) => {
+    setPaymentHistory(history);
+    storage.setItem('paymentHistory', JSON.stringify(history));
   };
 
   // Filter restaurants based on category and search
@@ -224,6 +273,16 @@ const StudentDashboard = () => {
     handlePaymentComplete(totalAmount);
     saveCartItems([]);
 
+    // Add to payment history
+    const orderPayment: PaymentHistory = {
+      id: `order_${Date.now()}`,
+      type: 'food_order',
+      amount: totalAmount,
+      reference: `order_${newOrder.id}`,
+      timestamp: Date.now(),
+    };
+    savePaymentHistory([orderPayment, ...paymentHistory]);
+
     // Add notification
     const orderNotification: Notification = {
       id: Date.now().toString(),
@@ -292,7 +351,7 @@ const StudentDashboard = () => {
       </div>
 
       {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="home">Home</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
@@ -382,6 +441,35 @@ const StudentDashboard = () => {
           
           {sampleDelivery && (
             <DeliveryTracking delivery={sampleDelivery} />
+          )}
+
+          {/* Payment History with Downloadable Receipts */}
+          {paymentHistory.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-semibold">Transaction History</h3>
+              <div className="space-y-3">
+                {paymentHistory.slice(0, 10).map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">
+                        {payment.type === 'wallet_topup' ? 'Wallet Top-up' : 'Food Order'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(payment.timestamp).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-semibold ${
+                        payment.type === 'wallet_topup' ? 'text-green-600' : 'text-blue-600'
+                      }`}>
+                        {payment.type === 'wallet_topup' ? '+' : '-'}₦{payment.amount.toLocaleString()}
+                      </span>
+                      <DownloadableReceipt receipt={payment} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </TabsContent>
 

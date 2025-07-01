@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { CreditCard, Loader2, Shield, CheckCircle } from 'lucide-react';
+import { CreditCard, Loader2, Shield, CheckCircle, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,20 +17,70 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [email, setEmail] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardholderName, setCardholderName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState<'input' | 'processing' | 'success'>('input');
   const { toast } = useToast();
 
   const predefinedAmounts = [500, 1000, 2000, 5000, 10000];
 
-  const handlePayment = async () => {
-    if (!amount || !email) {
+  // Format card number with spaces
+  const formatCardNumber = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = matches && matches[0] || '';
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return v;
+    }
+  };
+
+  // Format expiry date
+  const formatExpiryDate = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return v.substring(0, 2) + '/' + v.substring(2, 4);
+    }
+    return v;
+  };
+
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCardNumber(e.target.value);
+    if (formatted.replace(/\s/g, '').length <= 16) {
+      setCardNumber(formatted);
+    }
+  };
+
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatExpiryDate(e.target.value);
+    if (formatted.length <= 5) {
+      setExpiryDate(formatted);
+    }
+  };
+
+  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    if (value.length <= 4) {
+      setCvv(value);
+    }
+  };
+
+  const validateForm = () => {
+    if (!amount || !email || !cardNumber || !expiryDate || !cvv || !cardholderName) {
       toast({
         title: "Missing Information",
-        description: "Please enter both amount and email address",
+        description: "Please fill in all card details",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     const paymentAmount = parseFloat(amount);
@@ -40,9 +90,43 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
         description: "Minimum payment amount is ₦100",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
+    if (cardNumber.replace(/\s/g, '').length < 13) {
+      toast({
+        title: "Invalid Card Number",
+        description: "Please enter a valid card number",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (expiryDate.length !== 5) {
+      toast({
+        title: "Invalid Expiry Date",
+        description: "Please enter a valid expiry date (MM/YY)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (cvv.length < 3) {
+      toast({
+        title: "Invalid CVV",
+        description: "Please enter a valid CVV",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handlePayment = async () => {
+    if (!validateForm()) return;
+
+    const paymentAmount = parseFloat(amount);
     setIsLoading(true);
     setPaymentStep('processing');
 
@@ -56,6 +140,13 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
           amount: paymentAmount,
           email,
           reference,
+          card: {
+            number: cardNumber.replace(/\s/g, ''),
+            cvv,
+            expiryMonth: expiryDate.split('/')[0],
+            expiryYear: '20' + expiryDate.split('/')[1],
+            name: cardholderName
+          }
         },
       });
 
@@ -138,6 +229,10 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
   const resetForm = () => {
     setAmount('');
     setEmail('');
+    setCardNumber('');
+    setExpiryDate('');
+    setCvv('');
+    setCardholderName('');
     setPaymentStep('input');
     setIsLoading(false);
   };
@@ -153,11 +248,11 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
           Add Money with Card
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-green-600" />
-            Secure Payment
+            Secure Card Payment
           </DialogTitle>
         </DialogHeader>
         
@@ -166,8 +261,8 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-3">
                 <p className="text-sm text-blue-800">
-                  <Shield className="w-4 h-4 inline mr-1" />
-                  Powered by Paystack - Your payment is secure and encrypted
+                  <Lock className="w-4 h-4 inline mr-1" />
+                  SSL Encrypted • Powered by Paystack
                 </p>
               </CardContent>
             </Card>
@@ -214,9 +309,62 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
               </div>
             </div>
 
+            <div className="space-y-4 pt-4 border-t">
+              <h4 className="font-medium text-sm">Card Information</h4>
+              
+              <div>
+                <Label htmlFor="cardholderName">Cardholder Name</Label>
+                <Input
+                  id="cardholderName"
+                  type="text"
+                  placeholder="John Doe"
+                  value={cardholderName}
+                  onChange={(e) => setCardholderName(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="cardNumber">Card Number</Label>
+                <Input
+                  id="cardNumber"
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  value={cardNumber}
+                  onChange={handleCardNumberChange}
+                  className="mt-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="expiryDate">Expiry Date</Label>
+                  <Input
+                    id="expiryDate"
+                    type="text"
+                    placeholder="MM/YY"
+                    value={expiryDate}
+                    onChange={handleExpiryChange}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cvv">CVV</Label>
+                  <Input
+                    id="cvv"
+                    type="text"
+                    placeholder="123"
+                    value={cvv}
+                    onChange={handleCvvChange}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
             <Button 
               onClick={handlePayment}
-              disabled={isLoading || !amount || !email}
+              disabled={isLoading}
               className="w-full bg-green-600 hover:bg-green-700"
             >
               {isLoading ? (
@@ -228,7 +376,7 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              Secured by Paystack • SSL Encrypted
+              Secured by Paystack • SSL Encrypted • PCI Compliant
             </p>
           </div>
         )}
