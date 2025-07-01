@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, LogOut, User, Store, Wallet } from 'lucide-react';
+import { Bell, User, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
@@ -18,52 +18,51 @@ const Header = () => {
     }
   };
 
-  const handleWalletClick = () => {
-    if (role === 'student') {
-      // Navigate to wallet tab in student dashboard
-      navigate('/?tab=wallet');
-    }
+  const handleNotificationClick = () => {
+    // Toggle notifications - implement notification panel
+    console.log('Notifications clicked');
   };
 
+  // Don't render header for vendors - they have their own dashboard layout
+  if (role === 'vendor') {
+    return null;
+  }
+
   return (
-    <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-background/95 backdrop-blur-sm border-b border-border z-50">
-      <div className="px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            role === 'vendor' ? 'bg-green-600' : 'bg-orange-600'
-          }`}>
-            {role === 'vendor' ? (
-              <Store className="w-4 h-4 text-white" />
-            ) : (
-              <span className="text-white font-bold text-sm">S</span>
-            )}
+    <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white/95 backdrop-blur-sm border-b border-gray-100 z-50 shadow-sm">
+      <div className="px-4 py-4 flex items-center justify-between">
+        {/* Location & Greeting */}
+        <div className="flex-1">
+          <div className="flex items-center space-x-1 mb-1">
+            <MapPin className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600">Campus Location</span>
           </div>
-          <div>
-            <p className={`text-sm font-medium ${
-              role === 'vendor' ? 'text-green-600' : 'text-orange-600'
-            }`}>
-              SnappyEats {role === 'vendor' ? 'Vendor' : ''}
-            </p>
-            <p className="text-xs text-muted-foreground">Welcome {userName}</p>
-          </div>
+          <h1 className="text-lg font-bold text-gray-900">
+            Hello, {userName} 👋
+          </h1>
         </div>
-        <div className="flex items-center space-x-2">
-          {role === 'student' && (
-            <>
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-600 rounded-full"></span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleWalletClick}>
-                <Wallet className="w-5 h-5" />
-              </Button>
-            </>
-          )}
-          <Button variant="ghost" size="sm" onClick={handleProfileClick}>
-            <User className="w-5 h-5" />
+
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="relative p-2 hover:bg-gray-100 rounded-full"
+            onClick={handleNotificationClick}
+          >
+            <Bell className="w-5 h-5 text-gray-700" />
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs"></span>
           </Button>
-          <Button variant="ghost" size="sm" onClick={logout}>
-            <LogOut className="w-5 h-5" />
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="p-2 hover:bg-gray-100 rounded-full"
+            onClick={handleProfileClick}
+          >
+            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
+            </div>
           </Button>
         </div>
       </div>

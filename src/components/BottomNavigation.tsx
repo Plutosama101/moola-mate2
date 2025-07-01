@@ -9,35 +9,36 @@ const BottomNavigation = () => {
   const { role } = useUser();
 
   const studentNavItems = [
-    { to: '/', icon: Home, label: 'Home' },
-    { to: '/search', icon: Search, label: 'Search' },
+    { to: '/', icon: Home, label: 'Home', exact: true },
+    { to: '/search', icon: Search, label: 'Explore' },
     { to: '/orders', icon: ShoppingBag, label: 'Orders' },
     { to: '/?tab=wallet', icon: Wallet, label: 'Wallet' },
   ];
 
-  // Don't show bottom navigation for vendors since they have their own dashboard
+  // Don't show bottom navigation for vendors
   if (role === 'vendor') {
     return null;
   }
 
   return (
-    <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-background border-t border-border z-50">
-      <div className="flex items-center justify-around py-2">
-        {studentNavItems.map(({ to, icon: Icon, label }) => (
+    <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-100 z-50 shadow-lg">
+      <div className="flex items-center justify-around py-2 px-4">
+        {studentNavItems.map(({ to, icon: Icon, label, exact }) => (
           <NavLink
             key={to}
             to={to}
+            end={exact}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center py-2 px-3 rounded-lg transition-colors",
-                isActive || (to.includes('tab=wallet') && window.location.search.includes('tab=wallet'))
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground"
+                "flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 min-w-[60px]",
+                (isActive || (to.includes('tab=wallet') && window.location.search.includes('tab=wallet')))
+                  ? "text-orange-500 bg-orange-50 scale-105"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               )
             }
           >
-            <Icon className="w-5 h-5" />
-            <span className="text-xs mt-1">{label}</span>
+            <Icon className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">{label}</span>
           </NavLink>
         ))}
       </div>

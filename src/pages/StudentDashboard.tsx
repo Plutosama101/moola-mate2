@@ -1,7 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Heart, ShoppingBag, Bell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Search, Heart, ShoppingBag, Bell, Star, Clock, TrendingUp, Zap } from 'lucide-react';
 import CategoryCard from '@/components/CategoryCard';
 import RestaurantCard from '@/components/RestaurantCard';
 import NigerianWallet from '@/components/NigerianWallet';
@@ -333,179 +336,253 @@ const StudentDashboard = () => {
   } : null;
 
   return (
-    <div className="px-4 space-y-6">
+    <div className="bg-gray-50 min-h-screen">
       {/* PWA Install Prompt */}
       <PWAInstallPrompt />
 
-      {/* Header with Notifications */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-orange-600">SnappyEats</h1>
-          <p className="text-muted-foreground">Quick, delicious meals delivered</p>
-        </div>
+      <div className="px-4 pt-6 space-y-6">
+        {/* Main Tabs */}
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-white shadow-sm border border-gray-100">
+            <TabsTrigger value="home" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              Home
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              Orders
+            </TabsTrigger>
+            <TabsTrigger value="favorites" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              Favorites
+            </TabsTrigger>
+            <TabsTrigger value="wallet" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              Wallet
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="home" className="space-y-6 mt-6">
+            {/* Search Bar with Modern Design */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input 
+                placeholder="Search for cafeterias, dishes..." 
+                className="pl-12 pr-4 py-4 bg-white border-gray-200 rounded-2xl shadow-sm text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* Promotional Banner */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
+              <div className="relative z-10">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Zap className="w-5 h-5" />
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    Campus Special
+                  </Badge>
+                </div>
+                <h2 className="text-xl font-bold mb-2">Free Delivery Today! 🚀</h2>
+                <p className="text-white/90 text-sm mb-4">Order from your favorite campus cafeterias</p>
+                <Button size="sm" className="bg-white text-orange-500 hover:bg-white/90 font-semibold">
+                  Order Now
+                </Button>
+              </div>
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full"></div>
+              <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full"></div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div className="flex items-center space-x-2 mb-2">
+                  <TrendingUp className="w-4 h-4 text-green-500" />
+                  <span className="text-xs text-gray-500">This Week</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">{orders.length}</p>
+                <p className="text-xs text-gray-600">Orders</p>
+              </div>
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Heart className="w-4 h-4 text-red-500" />
+                  <span className="text-xs text-gray-500">Saved</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">{favoriteIds.length}</p>
+                <p className="text-xs text-gray-600">Favorites</p>
+              </div>
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  <span className="text-xs text-gray-500">Rating</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">4.8</p>
+                <p className="text-xs text-gray-600">Average</p>
+              </div>
+            </div>
+
+            {/* Categories */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Browse Categories</h3>
+                <Button variant="ghost" size="sm" className="text-orange-500 hover:text-orange-600">
+                  See all
+                </Button>
+              </div>
+              <div className="flex overflow-x-auto space-x-4 pb-2 scrollbar-hide">
+                {nigerianFoodCategories.map((category) => (
+                  <div 
+                    key={category.name}
+                    onClick={() => handleCategoryClick(category.name)}
+                    className={`cursor-pointer transition-all ${
+                      selectedCategory === category.name ? 'ring-2 ring-orange-500 scale-105' : ''
+                    }`}
+                  >
+                    <CategoryCard {...category} />
+                  </div>
+                ))}
+              </div>
+              {selectedCategory && (
+                <div className="flex items-center space-x-2 mt-3">
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                    {selectedCategory}
+                  </Badge>
+                  <button 
+                    onClick={() => setSelectedCategory('')}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Clear filter
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Restaurants */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">
+                  {selectedCategory ? `${selectedCategory} Cafeterias` : 'Campus Cafeterias'}
+                </h3>
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">15-30 min</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {filteredRestaurants.length > 0 ? (
+                  filteredRestaurants.map((restaurant) => (
+                    <RestaurantCard 
+                      key={restaurant.id} 
+                      {...restaurant}
+                      onAddToCart={handleAddToCart}
+                      onToggleFavorite={() => handleToggleFavorite(restaurant.id)}
+                      isFavorite={favoriteIds.includes(restaurant.id)}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100">
+                    <div className="text-6xl mb-4">🍽️</div>
+                    <p className="text-gray-600 mb-2">No cafeterias found</p>
+                    {selectedCategory && (
+                      <button 
+                        onClick={() => setSelectedCategory('')}
+                        className="text-orange-500 hover:text-orange-600 font-medium"
+                      >
+                        View all cafeterias
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="orders" className="space-y-6 mt-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Your Orders</h3>
+              <OrderTracking orders={orders} />
+            </div>
+            
+            {sampleDelivery && (
+              <DeliveryTracking delivery={sampleDelivery} />
+            )}
+
+            {/* Enhanced Payment History with Downloadable Receipts */}
+            {paymentHistory.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Transaction History</h3>
+                <div className="space-y-3">
+                  {paymentHistory.slice(0, 10).map((payment) => (
+                    <div key={payment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          payment.type === 'wallet_topup' ? 'bg-green-100' : 'bg-blue-100'
+                        }`}>
+                          {payment.type === 'wallet_topup' ? '💰' : '🍽️'}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {payment.type === 'wallet_topup' ? 'Wallet Top-up' : 'Food Order'}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(payment.timestamp).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <span className={`font-bold ${
+                          payment.type === 'wallet_topup' ? 'text-green-600' : 'text-blue-600'
+                        }`}>
+                          {payment.type === 'wallet_topup' ? '+' : '-'}₦{payment.amount.toLocaleString()}
+                        </span>
+                        <DownloadableReceipt receipt={payment} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="favorites" className="space-y-6 mt-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <FavoriteRestaurants
+                restaurants={nigerianRestaurants}
+                onToggleFavorite={handleToggleFavorite}
+                favoriteIds={favoriteIds}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="wallet" className="space-y-6 mt-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <NigerianWallet 
+                balance={walletBalance} 
+                onBalanceChange={setWalletBalance}
+              />
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <QRScanner 
+                walletBalance={walletBalance}
+                onPaymentComplete={handlePaymentComplete}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Cart Sidebar */}
+        <CartSidebar
+          items={cartItems}
+          onUpdateQuantity={handleUpdateCartQuantity}
+          onRemoveItem={handleRemoveFromCart}
+          onCheckout={handleCheckout}
+          walletBalance={walletBalance}
+        />
+
+        {/* Notifications */}
         <NotificationSystem
           notifications={notifications}
           onMarkAsRead={handleMarkNotificationAsRead}
           onDismiss={handleDismissNotification}
         />
       </div>
-
-      {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="home">Home</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="favorites">Favorites</TabsTrigger>
-          <TabsTrigger value="wallet">Wallet</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="home" className="space-y-6">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input 
-              placeholder="Search restaurants or dishes..." 
-              className="pl-10 bg-background/50 backdrop-blur-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h3 className="font-semibold mb-3">Food Categories</h3>
-            <div className="flex overflow-x-auto space-x-3 pb-2 scrollbar-hide">
-              {nigerianFoodCategories.map((category) => (
-                <div 
-                  key={category.name}
-                  onClick={() => handleCategoryClick(category.name)}
-                  className={`cursor-pointer transition-all ${
-                    selectedCategory === category.name ? 'ring-2 ring-orange-500' : ''
-                  }`}
-                >
-                  <CategoryCard {...category} />
-                </div>
-              ))}
-            </div>
-            {selectedCategory && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Showing restaurants with {selectedCategory} • 
-                <button 
-                  onClick={() => setSelectedCategory('')}
-                  className="text-orange-600 hover:underline ml-1"
-                >
-                  Clear filter
-                </button>
-              </p>
-            )}
-          </div>
-
-          {/* Restaurants */}
-          <div>
-            <h3 className="font-semibold mb-3">
-              {selectedCategory ? `${selectedCategory} Restaurants` : 'Featured Restaurants'}
-            </h3>
-            <div className="grid grid-cols-1 gap-4">
-              {filteredRestaurants.length > 0 ? (
-                filteredRestaurants.map((restaurant) => (
-                  <RestaurantCard 
-                    key={restaurant.id} 
-                    {...restaurant}
-                    onAddToCart={handleAddToCart}
-                    onToggleFavorite={() => handleToggleFavorite(restaurant.id)}
-                    isFavorite={favoriteIds.includes(restaurant.id)}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No restaurants found matching your criteria.</p>
-                  {selectedCategory && (
-                    <button 
-                      onClick={() => setSelectedCategory('')}
-                      className="text-orange-600 hover:underline mt-2"
-                    >
-                      View all restaurants
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="orders" className="space-y-6">
-          <div>
-            <h3 className="font-semibold mb-4">Your Orders</h3>
-            <OrderTracking orders={orders} />
-          </div>
-          
-          {sampleDelivery && (
-            <DeliveryTracking delivery={sampleDelivery} />
-          )}
-
-          {/* Payment History with Downloadable Receipts */}
-          {paymentHistory.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="font-semibold">Transaction History</h3>
-              <div className="space-y-3">
-                {paymentHistory.slice(0, 10).map((payment) => (
-                  <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">
-                        {payment.type === 'wallet_topup' ? 'Wallet Top-up' : 'Food Order'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(payment.timestamp).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold ${
-                        payment.type === 'wallet_topup' ? 'text-green-600' : 'text-blue-600'
-                      }`}>
-                        {payment.type === 'wallet_topup' ? '+' : '-'}₦{payment.amount.toLocaleString()}
-                      </span>
-                      <DownloadableReceipt receipt={payment} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="favorites" className="space-y-6">
-          <FavoriteRestaurants
-            restaurants={nigerianRestaurants}
-            onToggleFavorite={handleToggleFavorite}
-            favoriteIds={favoriteIds}
-          />
-        </TabsContent>
-
-        <TabsContent value="wallet" className="space-y-6">
-          {/* Nigerian Wallet */}
-          <NigerianWallet 
-            balance={walletBalance} 
-            onBalanceChange={setWalletBalance}
-          />
-
-          {/* QR Scanner */}
-          <div className="mb-4">
-            <QRScanner 
-              walletBalance={walletBalance}
-              onPaymentComplete={handlePaymentComplete}
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      {/* Cart Sidebar */}
-      <CartSidebar
-        items={cartItems}
-        onUpdateQuantity={handleUpdateCartQuantity}
-        onRemoveItem={handleRemoveFromCart}
-        onCheckout={handleCheckout}
-        walletBalance={walletBalance}
-      />
     </div>
   );
 };
