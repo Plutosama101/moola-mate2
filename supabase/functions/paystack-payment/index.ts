@@ -15,12 +15,21 @@ serve(async (req) => {
 
   try {
     const { amount, email, reference } = await req.json()
+    console.log('Payment request:', { amount, email, reference })
+    
+    // Get the Paystack secret key from Supabase secrets
+    const paystackKey = Deno.env.get('sk_test_a151f672274e8237ca37316387f5df69d156e6b8')
+    
+    if (!paystackKey) {
+      console.error('Paystack secret key not found')
+      throw new Error('Payment service configuration error')
+    }
     
     // Initialize payment with Paystack
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('PAYSTACK_SECRET_KEY')}`,
+        'Authorization': `Bearer ${paystackKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -29,12 +38,15 @@ serve(async (req) => {
         reference,
         currency: 'NGN',
         callback_url: `${req.headers.get('origin')}/payment-success`,
+        channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'],
       }),
     })
 
     const data = await paystackResponse.json()
+    console.log('Paystack response:', data)
     
     if (!data.status) {
+      console.error('Paystack error:', data.message)
       throw new Error(data.message || 'Payment initialization failed')
     }
 

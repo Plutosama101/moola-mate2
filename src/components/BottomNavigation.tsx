@@ -1,16 +1,33 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Search, ShoppingBag, User } from 'lucide-react';
+import { Home, Search, ShoppingBag, User, Store, QrCode, BarChart3, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUser } from '@/contexts/UserContext';
 
 const BottomNavigation = () => {
-  const navItems = [
+  const { role } = useUser();
+
+  const studentNavItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/search', icon: Search, label: 'Search' },
     { to: '/orders', icon: ShoppingBag, label: 'Orders' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
+
+  const vendorNavItems = [
+    { to: '/', icon: Store, label: 'Dashboard' },
+    { to: '/', icon: QrCode, label: 'QR Codes' },
+    { to: '/', icon: BarChart3, label: 'Analytics' },
+    { to: '/', icon: Settings, label: 'Settings' },
+  ];
+
+  const navItems = role === 'vendor' ? vendorNavItems : studentNavItems;
+
+  // Don't show bottom navigation for vendors since they have their own dashboard
+  if (role === 'vendor') {
+    return null;
+  }
 
   return (
     <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-background border-t border-border z-50">

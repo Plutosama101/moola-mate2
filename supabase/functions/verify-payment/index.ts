@@ -14,19 +14,30 @@ serve(async (req) => {
 
   try {
     const { reference } = await req.json()
+    console.log('Verifying payment:', reference)
+    
+    // Get the Paystack secret key from Supabase secrets
+    const paystackKey = Deno.env.get('sk_test_a151f672274e8237ca37316387f5df69d156e6b8')
+    
+    if (!paystackKey) {
+      console.error('Paystack secret key not found')
+      throw new Error('Payment service configuration error')
+    }
     
     // Verify payment with Paystack
     const verifyResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('PAYSTACK_SECRET_KEY')}`,
+        'Authorization': `Bearer ${paystackKey}`,
         'Content-Type': 'application/json',
       },
     })
 
     const data = await verifyResponse.json()
+    console.log('Verification response:', data)
     
     if (!data.status || data.data.status !== 'success') {
+      console.error('Payment verification failed:', data)
       throw new Error('Payment verification failed')
     }
 
@@ -38,6 +49,7 @@ serve(async (req) => {
         reference: data.data.reference,
         paid_at: data.data.paid_at,
         customer: data.data.customer,
+        authorization: data.data.authorization,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

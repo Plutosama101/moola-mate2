@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,10 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { QrCode, Store, DollarSign, Users, Plus, Trash2, LogOut, User } from 'lucide-react';
+import { QrCode, Store, DollarSign, Users, Plus, Trash2 } from 'lucide-react';
 import { storage } from '@/utils/storage';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import Header from '@/components/Header';
 
 interface FoodItem {
   id: string;
@@ -36,7 +35,6 @@ const VendorDashboard = () => {
   const [selectedItem, setSelectedItem] = useState<FoodItem | null>(null);
   const [customAmount, setCustomAmount] = useState('');
   const { toast } = useToast();
-  const { user, logout } = useUser();
 
   useEffect(() => {
     // Load existing food items
@@ -128,30 +126,10 @@ const VendorDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-green-600">SnappyEats Vendor</h1>
-              <p className="text-sm text-gray-600">Welcome, {user?.user_metadata?.name || user?.email}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm">
-              <User className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={logout}>
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="px-4 py-6 max-w-6xl mx-auto">
+      {/* Use the unified Header component */}
+      <Header />
+      
+      <div className="px-4 py-6 pt-20 max-w-6xl mx-auto">
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
