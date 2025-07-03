@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Search, ShoppingBag, Wallet } from 'lucide-react';
+import { Home, Search, ShoppingBag, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/UserContext';
 
@@ -12,7 +12,7 @@ const BottomNavigation = () => {
     { to: '/', icon: Home, label: 'Home', exact: true },
     { to: '/search', icon: Search, label: 'Explore' },
     { to: '/orders', icon: ShoppingBag, label: 'Orders' },
-    { to: '/?tab=wallet', icon: Wallet, label: 'Wallet' },
+    { to: '/profile', icon: User, label: 'Profile' },
   ];
 
   // Don't show bottom navigation for vendors
@@ -31,7 +31,7 @@ const BottomNavigation = () => {
             className={({ isActive }) =>
               cn(
                 "flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 min-w-[60px]",
-                (isActive || (to.includes('tab=wallet') && window.location.search.includes('tab=wallet')))
+                isActive
                   ? "text-orange-500 bg-orange-50 scale-105"
                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               )

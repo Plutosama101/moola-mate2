@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +17,7 @@ serve(async (req) => {
     console.log('Payment request:', { amount, email, reference })
     
     // Get the Paystack secret key from Supabase secrets
-    const paystackKey = Deno.env.get('sk_test_a151f672274e8237ca37316387f5df69d156e6b8')
+    const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY')
     
     if (!paystackKey) {
       console.error('Paystack secret key not found')

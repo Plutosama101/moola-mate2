@@ -25,8 +25,8 @@ const AppContent = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center mb-4 mx-auto">
-            <span className="text-white font-bold text-sm">S</span>
+          <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center mb-4 mx-auto animate-spin">
+            <div className="w-3 h-3 bg-white rounded-full"></div>
           </div>
           <p className="text-orange-600 font-semibold">Loading SnappyEats...</p>
         </div>
@@ -46,19 +46,17 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          {role === 'student' ? (
-            <>
-              <Route index element={<StudentDashboard />} />
-              <Route path="search" element={<Search />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="restaurant/:id" element={<RestaurantDetail />} />
-            </>
-          ) : (
-            <Route index element={<VendorDashboard />} />
-          )}
-        </Route>
+        {role === 'student' ? (
+          <Route path="/" element={<Layout />}>
+            <Route index element={<StudentDashboard />} />
+            <Route path="search" element={<Search />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="restaurant/:id" element={<RestaurantDetail />} />
+          </Route>
+        ) : (
+          <Route path="/" element={<VendorDashboard />} />
+        )}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

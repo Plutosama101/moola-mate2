@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { CreditCard, Loader2, Shield, CheckCircle, Lock } from 'lucide-react';
+import { CreditCard, Loader2, Shield, CheckCircle, Lock, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -23,6 +23,7 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
   const [cardholderName, setCardholderName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState<'input' | 'processing' | 'success'>('input');
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
   const { toast } = useToast();
 
   const predefinedAmounts = [500, 1000, 2000, 5000, 10000];
@@ -56,6 +57,9 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
     const formatted = formatCardNumber(e.target.value);
     if (formatted.replace(/\s/g, '').length <= 16) {
       setCardNumber(formatted);
+      if (errors.cardNumber) {
+        setErrors(prev => ({ ...prev, cardNumber: '' }));
+      }
     }
   };
 
@@ -63,6 +67,9 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
     const formatted = formatExpiryDate(e.target.value);
     if (formatted.length <= 5) {
       setExpiryDate(formatted);
+      if (errors.expiryDate) {
+        setErrors(prev => ({ ...prev, expiryDate: '' }));
+      }
     }
   };
 
@@ -70,61 +77,63 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
     if (value.length <= 4) {
       setCvv(value);
+      if (errors.cvv) {
+        setErrors(prev => ({ ...prev, cvv: '' }));
+      }
     }
   };
 
   const validateForm = () => {
-    if (!amount || !email || !cardNumber || !expiryDate || !cvv || !cardholderName) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all card details",
-        variant: "destructive",
-      });
-      return false;
+    const newErrors: {[key: string]: string} = {};
+
+    if (!amount || parseFloat(amount) < 100) {
+      newErrors.amount = 'Minimum amount is ₦100';
     }
 
-    const paymentAmount = parseFloat(amount);
-    if (paymentAmount < 100) {
-      toast({
-        title: "Invalid Amount",
-        description: "Minimum payment amount is ₦100",
-        variant: "destructive",
-      });
-      return false;
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
 
-    if (cardNumber.replace(/\s/g, '').length < 13) {
-      toast({
-        title: "Invalid Card Number",
-        description: "Please enter a valid card number",
-        variant: "destructive",
-      });
-      return false;
+    if (!cardholderName.trim()) {
+      newErrors.cardholderName = 'Cardholder name is required';
     }
 
-    if (expiryDate.length !== 5) {
-      toast({
-        title: "Invalid Expiry Date",
-        description: "Please enter a valid expiry date (MM/YY)",
-        variant: "destructive",
-      });
-      return false;
+    if (!cardNumber || cardNumber.replace(/\s/g, '').length < 13) {
+      newErrors.cardNumber = 'Please enter a valid card number';
     }
 
-    if (cvv.length < 3) {
-      toast({
-        title: "Invalid CVV",
-        description: "Please enter a valid CVV",
-        variant: "destructive",
-      });
-      return false;
+    if (!expiryDate || expiryDate.length !== 5) {
+      newErrors.expiryDate = 'Please enter a valid expiry date (MM/YY)';
+    } else {
+      const [month, year] = expiryDate.split('/');
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear() % 100;
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      if (parseInt(month) < 1 || parseInt(month) > 12) {
+        newErrors.expiryDate = 'Invalid month';
+      } else if (parseInt(year) < currentYear || (parseInt(year) === currentYear && parseInt(month) < currentMonth)) {
+        newErrors.expiryDate = 'Card has expired';
+      }
     }
 
-    return true;
+    if (!cvv || cvv.length < 3) {
+      newErrors.cvv = 'Please enter a valid CVV';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handlePayment = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast({
+        title: "Please fix the errors",
+        description: "Check the form for validation errors",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const paymentAmount = parseFloat(amount);
     setIsLoading(true);
@@ -140,19 +149,12 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
           amount: paymentAmount,
           email,
           reference,
-          card: {
-            number: cardNumber.replace(/\s/g, ''),
-            cvv,
-            expiryMonth: expiryDate.split('/')[0],
-            expiryYear: '20' + expiryDate.split('/')[1],
-            name: cardholderName
-          }
         },
       });
 
       if (error) {
         console.error('Supabase function error:', error);
-        throw error;
+        throw new Error(error.message || 'Payment initialization failed');
       }
 
       console.log('Payment initialization response:', data);
@@ -209,12 +211,17 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
           if (!paymentWindow?.closed) {
             setIsLoading(false);
             setPaymentStep('input');
+            toast({
+              title: "Payment timeout",
+              description: "Please try again",
+              variant: "destructive",
+            });
           }
         }, 600000);
       } else {
         throw new Error(data.error || 'Payment initialization failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment error:', error);
       setPaymentStep('input');
       toast({
@@ -235,7 +242,44 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
     setCardholderName('');
     setPaymentStep('input');
     setIsLoading(false);
+    setErrors({});
   };
+
+  const InputField = ({ 
+    id, 
+    label, 
+    type = "text", 
+    placeholder, 
+    value, 
+    onChange, 
+    error 
+  }: {
+    id: string;
+    label: string;
+    type?: string;
+    placeholder: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    error?: string;
+  }) => (
+    <div>
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={`mt-1 ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
+      />
+      {error && (
+        <div className="flex items-center space-x-1 mt-1">
+          <AlertCircle className="w-3 h-3 text-red-500" />
+          <span className="text-xs text-red-500">{error}</span>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -267,30 +311,25 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
               </CardContent>
             </Card>
 
-            <div>
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1"
-              />
-            </div>
+            <InputField
+              id="email"
+              label="Email Address"
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={errors.email}
+            />
 
-            <div>
-              <Label htmlFor="amount">Amount (₦)</Label>
-              <Input
-                id="amount"
-                type="number"
-                placeholder="Enter amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                min="100"
-                className="mt-1"
-              />
-            </div>
+            <InputField
+              id="amount"
+              label="Amount (₦)"
+              type="number"
+              placeholder="Enter amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              error={errors.amount}
+            />
 
             <div>
               <Label>Quick Select</Label>
@@ -312,53 +351,41 @@ const PaystackPayment = ({ onPaymentSuccess }: PaystackPaymentProps) => {
             <div className="space-y-4 pt-4 border-t">
               <h4 className="font-medium text-sm">Card Information</h4>
               
-              <div>
-                <Label htmlFor="cardholderName">Cardholder Name</Label>
-                <Input
-                  id="cardholderName"
-                  type="text"
-                  placeholder="John Doe"
-                  value={cardholderName}
-                  onChange={(e) => setCardholderName(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
+              <InputField
+                id="cardholderName"
+                label="Cardholder Name"
+                placeholder="John Doe"
+                value={cardholderName}
+                onChange={(e) => setCardholderName(e.target.value)}
+                error={errors.cardholderName}
+              />
 
-              <div>
-                <Label htmlFor="cardNumber">Card Number</Label>
-                <Input
-                  id="cardNumber"
-                  type="text"
-                  placeholder="1234 5678 9012 3456"
-                  value={cardNumber}
-                  onChange={handleCardNumberChange}
-                  className="mt-1"
-                />
-              </div>
+              <InputField
+                id="cardNumber"
+                label="Card Number"
+                placeholder="1234 5678 9012 3456"
+                value={cardNumber}
+                onChange={handleCardNumberChange}
+                error={errors.cardNumber}
+              />
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="expiryDate">Expiry Date</Label>
-                  <Input
-                    id="expiryDate"
-                    type="text"
-                    placeholder="MM/YY"
-                    value={expiryDate}
-                    onChange={handleExpiryChange}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input
-                    id="cvv"
-                    type="text"
-                    placeholder="123"
-                    value={cvv}
-                    onChange={handleCvvChange}
-                    className="mt-1"
-                  />
-                </div>
+                <InputField
+                  id="expiryDate"
+                  label="Expiry Date"
+                  placeholder="MM/YY"
+                  value={expiryDate}
+                  onChange={handleExpiryChange}
+                  error={errors.expiryDate}
+                />
+                <InputField
+                  id="cvv"
+                  label="CVV"
+                  placeholder="123"
+                  value={cvv}
+                  onChange={handleCvvChange}
+                  error={errors.cvv}
+                />
               </div>
             </div>
 
