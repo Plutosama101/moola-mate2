@@ -16,23 +16,26 @@ import {
   Wallet,
   Settings,
   Bell,
-  Shield
+  Shield,
+  Save,
+  X
 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
   const { user, logout, role } = useUser();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editData, setEditData] = useState({
-    name: user?.user_metadata?.name || '',
-    email: user?.email || '',
-    phone: user?.user_metadata?.phone || '',
+    full_name: user?.user_metadata?.full_name || user?.user_metadata?.name || '',
+    phone_number: user?.user_metadata?.phone_number || user?.user_metadata?.phone || '',
     department: user?.user_metadata?.department || '',
-    matricNumber: user?.user_metadata?.matric_number || ''
+    matric_number: user?.user_metadata?.matric_number || ''
   });
 
   // Get wallet balance from localStorage for demo
@@ -47,11 +50,80 @@ const Profile = () => {
     navigate('/');
   };
 
-  const handleSaveProfile = () => {
-    // In a real app, you'd update the profile via Supabase
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been updated successfully",
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      // Update user metadata in Supabase Auth
+      const { error: authError } = await supabase.auth.updateUser({
+        data: {
+          full_name: editData.full_name,
+          name: editData.full_name, // Keep both for compatibility
+          phone_number: editData.phone_number,
+          phone: editData.phone_number, // Keep both for compatibility
+          department: editData.department,
+          matric_number: editData.matric_number
+        }
+      });
+
+      if (authError) {
+        console.error('Auth update error:', authError);
+        toast({
+          title: "Update Failed",
+          description: "Failed to update profile. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Try to update profile table if it exists
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            user_id: user?.id,
+            email: user?.email,
+            full_name: editData.full_name,
+            phone_number: editData.phone_number,
+            department: editData.department,
+            matric_number: editData.matric_number,
+            role: role === 'student' ? 'student' : 'vendor'
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (profileError) {
+          console.log('Profile table update failed (may not exist):', profileError);
+        }
+      } catch (profileTableError) {
+        console.log('Profile table does not exist or other error:', profileTableError);
+      }
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully",
+      });
+      setIsEditing(false);
+      
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Update Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditData({
+      full_name: user?.user_metadata?.full_name || user?.user_metadata?.name || '',
+      phone_number: user?.user_metadata?.phone_number || user?.user_metadata?.phone || '',
+      department: user?.user_metadata?.department || '',
+      matric_number: user?.user_metadata?.matric_number || ''
     });
     setIsEditing(false);
   };
@@ -70,7 +142,7 @@ const Profile = () => {
             <User className="w-10 h-10 text-orange-500" />
           </div>
           <h1 className="text-2xl font-bold mb-1">
-            {user?.user_metadata?.name || user?.email?.split('@')[0] || 'Student'}
+            {user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}
           </h1>
           <Badge className="bg-white/20 text-white border-white/30">
             {role === 'student' ? 'Student' : 'Vendor'}
@@ -79,50 +151,75 @@ const Profile = () => {
       </div>
 
       <div className="px-4 -mt-4 space-y-4">
-        {/* Wallet Card */}
-        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-100 text-sm">Wallet Balance</p>
-                <p className="text-2xl font-bold">₦{Number(walletBalance).toLocaleString()}</p>
+        {/* Wallet Card - Only show for students */}
+        {role === 'student' && (
+          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm">Wallet Balance</p>
+                  <p className="text-2xl font-bold">₦{Number(walletBalance).toLocaleString()}</p>
+                </div>
+                <Wallet className="w-8 h-8 text-green-100" />
               </div>
-              <Wallet className="w-8 h-8 text-green-100" />
-            </div>
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              className="mt-3 bg-white/20 hover:bg-white/30 text-white border-0"
-            >
-              Add Money
-            </Button>
-          </CardContent>
-        </Card>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="mt-3 bg-white/20 hover:bg-white/30 text-white border-0"
+              >
+                Add Money
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          {profileStats.map((stat, index) => (
-            <Card key={index}>
-              <CardContent className="p-3 text-center">
-                <div className="text-2xl mb-1">{stat.icon}</div>
-                <div className="text-lg font-bold text-gray-900">{stat.value}</div>
-                <div className="text-xs text-gray-500">{stat.label}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Stats Cards - Only show for students */}
+        {role === 'student' && (
+          <div className="grid grid-cols-3 gap-3">
+            {profileStats.map((stat, index) => (
+              <Card key={index}>
+                <CardContent className="p-3 text-center">
+                  <div className="text-2xl mb-1">{stat.icon}</div>
+                  <div className="text-lg font-bold text-gray-900">{stat.value}</div>
+                  <div className="text-xs text-gray-500">{stat.label}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Profile Information */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-lg">Profile Information</CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
+            {!isEditing ? (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+            ) : (
+              <div className="flex space-x-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleSaveProfile}
+                  disabled={isSaving}
+                >
+                  <Save className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
@@ -130,15 +227,7 @@ const Profile = () => {
                 <Mail className="w-5 h-5 text-gray-400" />
                 <div className="flex-1">
                   <Label className="text-sm text-gray-500">Email</Label>
-                  {isEditing ? (
-                    <Input 
-                      value={editData.email}
-                      onChange={(e) => setEditData({...editData, email: e.target.value})}
-                      className="mt-1"
-                    />
-                  ) : (
-                    <p className="font-medium">{user?.email}</p>
-                  )}
+                  <p className="font-medium">{user?.email}</p>
                 </div>
               </div>
 
@@ -150,12 +239,13 @@ const Profile = () => {
                   <Label className="text-sm text-gray-500">Full Name</Label>
                   {isEditing ? (
                     <Input 
-                      value={editData.name}
-                      onChange={(e) => setEditData({...editData, name: e.target.value})}
+                      value={editData.full_name}
+                      onChange={(e) => setEditData({...editData, full_name: e.target.value})}
                       className="mt-1"
+                      placeholder="Enter your full name"
                     />
                   ) : (
-                    <p className="font-medium">{user?.user_metadata?.name || 'Not set'}</p>
+                    <p className="font-medium">{user?.user_metadata?.full_name || user?.user_metadata?.name || 'Not set'}</p>
                   )}
                 </div>
               </div>
@@ -169,9 +259,10 @@ const Profile = () => {
                       <Label className="text-sm text-gray-500">Matric Number</Label>
                       {isEditing ? (
                         <Input 
-                          value={editData.matricNumber}
-                          onChange={(e) => setEditData({...editData, matricNumber: e.target.value})}
+                          value={editData.matric_number}
+                          onChange={(e) => setEditData({...editData, matric_number: e.target.value})}
                           className="mt-1"
+                          placeholder="Enter your matric number"
                         />
                       ) : (
                         <p className="font-medium">{user?.user_metadata?.matric_number || 'Not set'}</p>
@@ -190,6 +281,7 @@ const Profile = () => {
                           value={editData.department}
                           onChange={(e) => setEditData({...editData, department: e.target.value})}
                           className="mt-1"
+                          placeholder="Enter your department"
                         />
                       ) : (
                         <p className="font-medium">{user?.user_metadata?.department || 'Not set'}</p>
@@ -207,12 +299,13 @@ const Profile = () => {
                   <Label className="text-sm text-gray-500">Phone Number</Label>
                   {isEditing ? (
                     <Input 
-                      value={editData.phone}
-                      onChange={(e) => setEditData({...editData, phone: e.target.value})}
+                      value={editData.phone_number}
+                      onChange={(e) => setEditData({...editData, phone_number: e.target.value})}
                       className="mt-1"
+                      placeholder="Enter your phone number"
                     />
                   ) : (
-                    <p className="font-medium">{user?.user_metadata?.phone || 'Not set'}</p>
+                    <p className="font-medium">{user?.user_metadata?.phone_number || user?.user_metadata?.phone || 'Not set'}</p>
                   )}
                 </div>
               </div>
@@ -220,13 +313,18 @@ const Profile = () => {
 
             {isEditing && (
               <div className="flex space-x-2 pt-4">
-                <Button onClick={handleSaveProfile} className="flex-1">
-                  Save Changes
+                <Button 
+                  onClick={handleSaveProfile} 
+                  className="flex-1"
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Saving...' : 'Save Changes'}
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => setIsEditing(false)}
+                  onClick={handleCancelEdit}
                   className="flex-1"
+                  disabled={isSaving}
                 >
                   Cancel
                 </Button>

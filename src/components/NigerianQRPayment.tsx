@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -14,30 +15,7 @@ interface NigerianQRPaymentProps {
 
 const NigerianQRPayment = ({ food, walletBalance, onBalanceChange }: NigerianQRPaymentProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [qrData, setQRData] = useState('');
   const { toast } = useToast();
-
-  const generateQRCode = () => {
-    const paymentData = {
-      type: 'nigerian_food_payment',
-      foodId: food.id,
-      foodName: food.name,
-      amount: food.price,
-      currency: 'NGN',
-      restaurant: food.restaurant,
-      timestamp: Date.now(),
-      paymentId: `PAY_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
-    };
-    
-    const qrString = JSON.stringify(paymentData);
-    setQRData(qrString);
-    setIsOpen(true);
-    
-    toast({
-      title: 'QR Code Generated',
-      description: `Payment link created for ${food.name}`,
-    });
-  };
 
   const handleWalletPayment = () => {
     if (walletBalance >= food.price) {
@@ -59,15 +37,10 @@ const NigerianQRPayment = ({ food, walletBalance, onBalanceChange }: NigerianQRP
     }
   };
 
-  const qrCodeUrl = qrData ? 
-    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}` : 
-    '';
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button 
-          onClick={generateQRCode}
           size="sm"
           className="bg-blue-600 hover:bg-blue-700"
         >
@@ -86,23 +59,11 @@ const NigerianQRPayment = ({ food, walletBalance, onBalanceChange }: NigerianQRP
             <p className="text-xl font-bold text-green-600">₦{food.price.toLocaleString()}</p>
           </div>
           
-          {qrData && (
-            <div className="space-y-2">
-              <img 
-                src={qrCodeUrl} 
-                alt="QR Code" 
-                className="mx-auto border rounded"
-                onError={(e) => {
-                  e.currentTarget.src = `https://via.placeholder.com/200x200/10B981/ffffff?text=QR+Code`;
-                }}
-              />
-              <p className="text-sm text-gray-600">
-                Scan this QR code with your payment app
-              </p>
-            </div>
-          )}
-          
           <div className="space-y-2">
+            <p className="text-sm text-gray-600 mb-4">
+              Use QR Scanner to scan vendor's payment code or pay directly from wallet
+            </p>
+            
             <Button 
               onClick={handleWalletPayment}
               className="w-full bg-green-600 hover:bg-green-700"

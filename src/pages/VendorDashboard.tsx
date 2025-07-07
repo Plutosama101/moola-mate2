@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,10 +12,11 @@ import {
   Package,
   LogOut,
   Settings,
-  User
+  QrCode
 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import PrintableReceipt from '@/components/PrintableReceipt';
+import QRCodeGenerator from '@/pages/QRCodeGenerator';
 
 interface Order {
   id: string;
@@ -38,7 +38,6 @@ const VendorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
-    // Load sample orders for demonstration
     const sampleOrders: Order[] = [
       {
         id: 'ORD001',
@@ -102,6 +101,12 @@ const VendorDashboard = () => {
   const pendingOrders = orders.filter(order => order.status === 'pending').length;
   const completedOrders = orders.filter(order => order.status === 'delivered').length;
 
+  const vendorInfo = {
+    name: user?.user_metadata?.name || 'Campus Vendor',
+    id: user?.id || 'vendor_001',
+    address: 'University Campus'
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
       {/* Vendor Header with Logout */}
@@ -145,7 +150,7 @@ const VendorDashboard = () => {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="menu">Menu</TabsTrigger>
+            <TabsTrigger value="qr-generator">QR Generator</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -307,17 +312,16 @@ const VendorDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="menu" className="space-y-6">
+          <TabsContent value="qr-generator" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Menu Management</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <QrCode className="w-5 h-5" />
+                  Generate Payment QR Codes
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-muted-foreground">Menu management features coming soon...</p>
-                  <Button className="mt-4">Add Menu Item</Button>
-                </div>
+                <QRCodeGenerator vendorInfo={vendorInfo} />
               </CardContent>
             </Card>
           </TabsContent>

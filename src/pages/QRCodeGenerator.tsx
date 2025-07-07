@@ -1,24 +1,37 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Download, RefreshCw, QrCode } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-interface QRCodeGeneratorProps {
-  amount: number;
-  vendorInfo: {
-    name: string;
-    id: string;
-    address: string;
-  };
-  customOrderId?: string;
+interface VendorInfo {
+  name: string;
+  id: string;
+  address: string;
 }
 
-const QRCodeGenerator = ({ amount, vendorInfo, customOrderId }: QRCodeGeneratorProps) => {
+interface QRCodeGeneratorProps {
+  vendorInfo?: VendorInfo;
+}
+
+const QRCodeGenerator = ({ vendorInfo }: QRCodeGeneratorProps) => {
+  const [amount, setAmount] = useState<number>(0);
+  const [itemName, setItemName] = useState<string>('');
   const [qrCodeSvg, setQrCodeSvg] = useState<string>('');
   const [orderId, setOrderId] = useState<string>('');
+  const { toast } = useToast();
+
+  const defaultVendorInfo: VendorInfo = {
+    name: vendorInfo?.name || 'Campus Vendor',
+    id: vendorInfo?.id || 'vendor_001',
+    address: vendorInfo?.address || 'University Campus'
+  };
 
   const generateOrderId = () => {
-    return customOrderId || `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+    return `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
   };
 
   const generateQRCodeData = () => {
@@ -26,27 +39,26 @@ const QRCodeGenerator = ({ amount, vendorInfo, customOrderId }: QRCodeGeneratorP
     setOrderId(newOrderId);
     
     return JSON.stringify({
-      type: 'payment',
+      type: 'vendor_payment',
       orderId: newOrderId,
       amount: amount,
-      currency: 'USD',
-      merchant: vendorInfo.name,
-      vendorId: vendorInfo.id,
-      vendorAddress: vendorInfo.address,
+      currency: 'NGN',
+      itemName: itemName || 'Food Item',
+      vendor: defaultVendorInfo.name,
+      vendorId: defaultVendorInfo.id,
+      vendorAddress: defaultVendorInfo.address,
       timestamp: Date.now()
     });
   };
 
   const generateSimpleQR = (text: string) => {
-    // Simple SVG QR code placeholder - in a real app, you'd use a proper QR library
     const size = 200;
-    const modules = 21; // Standard QR code size
+    const modules = 21;
     const moduleSize = size / modules;
     
     let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
     svg += `<rect width="${size}" height="${size}" fill="white"/>`;
     
-    // Generate a simple pattern based on the text hash
     const hash = text.split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);
       return a & a;
@@ -61,7 +73,6 @@ const QRCodeGenerator = ({ amount, vendorInfo, customOrderId }: QRCodeGeneratorP
       }
     }
     
-    // Add corner squares (finder patterns)
     const cornerSize = moduleSize * 7;
     const positions = [[0, 0], [size - cornerSize, 0], [0, size - cornerSize]];
     
@@ -76,9 +87,23 @@ const QRCodeGenerator = ({ amount, vendorInfo, customOrderId }: QRCodeGeneratorP
   };
 
   const generateQRCode = () => {
+    if (amount <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid amount greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const qrData = generateQRCodeData();
     const svgData = generateSimpleQR(qrData);
     setQrCodeSvg(svgData);
+    
+    toast({
+      title: "QR Code Generated",
+      description: `Payment QR code created for ₦${amount.toLocaleString()}`,
+    });
   };
 
   const downloadQRCode = () => {
@@ -99,51 +124,88 @@ const QRCodeGenerator = ({ amount, vendorInfo, customOrderId }: QRCodeGeneratorP
     if (amount > 0) {
       generateQRCode();
     }
-  }, [amount, vendorInfo, customOrderId]);
+  }, [amount, itemName]);
 
   return (
-    <div className="space-y-4">
-      <div className="border rounded-lg p-4 bg-white">
-        {qrCodeSvg && amount > 0 ? (
-          <div className="flex flex-col items-center space-y-4">
-            <div 
-              className="w-48 h-48"
-              dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
+    <div className="max-w-md mx-auto p-4 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <QrCode className="w-5 h-5" />
+            Vendor QR Code Generator
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="itemName">Item Name</Label>
+            <Input
+              id="itemName"
+              type="text"
+              placeholder="e.g., Jollof Rice"
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)}
             />
-            <div className="text-center space-y-1">
-              <p className="font-semibold text-lg">${amount.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground">{orderId}</p>
-              <p className="text-xs text-muted-foreground">{vendorInfo.name}</p>
-            </div>
           </div>
-        ) : (
-          <div className="w-48 h-48 flex items-center justify-center bg-gray-100 rounded">
-            <span className="text-sm text-gray-500">
-              {amount <= 0 ? 'Enter amount to generate QR code' : 'Generating QR code...'}
-            </span>
+          
+          <div className="space-y-2">
+            <Label htmlFor="amount">Amount (₦)</Label>
+            <Input
+              id="amount"
+              type="number"
+              placeholder="0.00"
+              value={amount || ''}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              min="0.01"
+              step="0.01"
+            />
           </div>
-        )}
-      </div>
-      
-      <div className="flex space-x-2">
-        <Button 
-          onClick={generateQRCode} 
-          disabled={amount <= 0}
-          variant="outline"
-          size="sm"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Regenerate
-        </Button>
-        <Button 
-          onClick={downloadQRCode} 
-          disabled={!qrCodeSvg || amount <= 0}
-          size="sm"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Download
-        </Button>
-      </div>
+
+          <div className="border rounded-lg p-4 bg-gray-50">
+            {qrCodeSvg && amount > 0 ? (
+              <div className="flex flex-col items-center space-y-4">
+                <div 
+                  className="w-48 h-48 border rounded"
+                  dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
+                />
+                <div className="text-center space-y-1">
+                  <p className="font-semibold text-lg">₦{amount.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">{itemName || 'Food Item'}</p>
+                  <p className="text-xs text-muted-foreground">{orderId}</p>
+                  <p className="text-xs text-muted-foreground">{defaultVendorInfo.name}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="w-48 h-48 flex items-center justify-center bg-white rounded mx-auto">
+                <span className="text-sm text-gray-500 text-center">
+                  {amount <= 0 ? 'Enter amount and item name to generate QR code' : 'Generating QR code...'}
+                </span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex space-x-2">
+            <Button 
+              onClick={generateQRCode} 
+              disabled={amount <= 0}
+              variant="outline"
+              size="sm"
+              className="flex-1"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Regenerate
+            </Button>
+            <Button 
+              onClick={downloadQRCode} 
+              disabled={!qrCodeSvg || amount <= 0}
+              size="sm"
+              className="flex-1"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
