@@ -37,22 +37,31 @@ const StudentDashboard = () => {
   });
 
   const categories = [
-    { id: 'all', name: 'All', emoji: '🍽️' },
-    { id: 'Rice Dishes', name: 'Rice', emoji: '🍚' },
-    { id: 'Soups & Stews', name: 'Soup', emoji: '🍲' },
-    { id: 'Snacks', name: 'Snacks', emoji: '🥟' },
+    { 
+      id: 'all', 
+      name: 'All', 
+      icon: Utensils,
+      color: 'bg-orange-500'
+    },
+    { 
+      id: 'Rice Dishes', 
+      name: 'Rice', 
+      icon: Coffee,
+      color: 'bg-green-500'
+    },
+    { 
+      id: 'Soups & Stews', 
+      name: 'Soup', 
+      icon: Pizza,
+      color: 'bg-red-500'
+    },
+    { 
+      id: 'Snacks', 
+      name: 'Snacks', 
+      icon: IceCream,
+      color: 'bg-blue-500'
+    },
   ];
-
-  const popularRestaurants = nigerianRestaurants.map(restaurant => ({
-    id: restaurant.id,
-    name: restaurant.name,
-    image: restaurant.image,
-    rating: restaurant.rating,
-    deliveryTime: restaurant.deliveryTime,
-    categories: [restaurant.cuisine],
-    isOpen: true,
-    distance: "0.5 km"
-  }));
 
   const allFoods = getAllNigerianFoods();
   const filteredFoods = allFoods.filter(food => {
@@ -110,7 +119,7 @@ const StudentDashboard = () => {
             <CategoryCard
               key={category.id}
               name={category.name}
-              emoji={category.emoji}
+              emoji="🍽️"
               onClick={() => setSelectedCategory(category.id)}
             />
           ))}
@@ -146,8 +155,19 @@ const StudentDashboard = () => {
           </Button>
         </div>
         <div className="space-y-3">
-          {popularRestaurants.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} {...restaurant} />
+          {nigerianRestaurants.map((restaurant) => (
+            <RestaurantCard 
+              key={restaurant.id} 
+              id={restaurant.id}
+              name={restaurant.name}
+              image={restaurant.image}
+              rating={restaurant.rating}
+              deliveryTime={restaurant.deliveryTime}
+              cuisine={restaurant.cuisine}
+              foods={restaurant.foods}
+              onToggleFavorite={() => handleToggleFavorite(restaurant.id)}
+              isFavorite={favoriteRestaurantIds.includes(restaurant.id)}
+            />
           ))}
         </div>
       </div>
