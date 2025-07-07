@@ -1,12 +1,14 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { QrCode, Store, DollarSign, Users } from 'lucide-react';
+import { QrCode, Store, DollarSign, Users, LogOut } from 'lucide-react';
 import QRCodeGenerator from './QRCodeGenerator';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const VendorAdmin = () => {
   const [vendorInfo, setVendorInfo] = useState({
@@ -17,6 +19,8 @@ const VendorAdmin = () => {
 
   const [paymentAmount, setPaymentAmount] = useState('');
   const [customOrderId, setCustomOrderId] = useState('');
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Mock data for analytics
   const analytics = {
@@ -32,11 +36,34 @@ const VendorAdmin = () => {
     { id: 'ORD-003', amount: 32.00, status: 'paid', time: '12 mins ago' },
   ];
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your vendor account.",
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Logout failed",
+        description: "There was an error logging you out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="px-4 py-6 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Vendor Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, {vendorInfo.name}</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Vendor Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back, {vendorInfo.name}</p>
+        </div>
+        <Button onClick={handleLogout} variant="outline" size="sm">
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
+        </Button>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
@@ -157,11 +184,7 @@ const VendorAdmin = () => {
                   </div>
                 </div>
                 <div>
-                  <QRCodeGenerator
-                    amount={parseFloat(paymentAmount) || 0}
-                    vendorInfo={vendorInfo}
-                    customOrderId={customOrderId}
-                  />
+                  <QRCodeGenerator vendorInfo={vendorInfo} />
                 </div>
               </div>
             </CardContent>

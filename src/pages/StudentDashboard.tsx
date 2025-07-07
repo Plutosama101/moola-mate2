@@ -22,7 +22,7 @@ import {
   Pizza,
   IceCream
 } from 'lucide-react';
-import { nigerianFoods } from '@/data/nigerianFood';
+import { getAllNigerianFoods, nigerianRestaurants } from '@/data/nigerianFood';
 
 const StudentDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,48 +31,31 @@ const StudentDashboard = () => {
     const saved = localStorage.getItem('nigerianWallet');
     return saved ? parseInt(saved) : 5000;
   });
+  const [favoriteRestaurantIds, setFavoriteRestaurantIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('favoriteRestaurants');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const categories = [
-    { id: 'all', name: 'All', icon: Utensils, color: 'bg-gray-100' },
-    { id: 'rice', name: 'Rice', icon: Coffee, color: 'bg-orange-100' },
-    { id: 'soup', name: 'Soup', icon: Pizza, color: 'bg-green-100' },
-    { id: 'snacks', name: 'Snacks', icon: IceCream, color: 'bg-blue-100' },
+    { id: 'all', name: 'All', emoji: '🍽️' },
+    { id: 'Rice Dishes', name: 'Rice', emoji: '🍚' },
+    { id: 'Soups & Stews', name: 'Soup', emoji: '🍲' },
+    { id: 'Snacks', name: 'Snacks', emoji: '🥟' },
   ];
 
-  const popularRestaurants = [
-    {
-      id: 1,
-      name: "Mama's Kitchen",
-      image: "/placeholder.svg",
-      rating: 4.8,
-      deliveryTime: "20-30 min",
-      categories: ["Nigerian", "Fast Food"],
-      isOpen: true,
-      distance: "0.5 km"
-    },
-    {
-      id: 2,
-      name: "Campus Canteen",
-      image: "/placeholder.svg", 
-      rating: 4.5,
-      deliveryTime: "15-25 min",
-      categories: ["Nigerian", "Local"],
-      isOpen: true,
-      distance: "0.3 km"
-    },
-    {
-      id: 3,
-      name: "Quick Bites",
-      image: "/placeholder.svg",
-      rating: 4.2,
-      deliveryTime: "10-20 min", 
-      categories: ["Snacks", "Drinks"],
-      isOpen: false,
-      distance: "0.8 km"
-    }
-  ];
+  const popularRestaurants = nigerianRestaurants.map(restaurant => ({
+    id: restaurant.id,
+    name: restaurant.name,
+    image: restaurant.image,
+    rating: restaurant.rating,
+    deliveryTime: restaurant.deliveryTime,
+    categories: [restaurant.cuisine],
+    isOpen: true,
+    distance: "0.5 km"
+  }));
 
-  const filteredFoods = nigerianFoods.filter(food => {
+  const allFoods = getAllNigerianFoods();
+  const filteredFoods = allFoods.filter(food => {
     const matchesSearch = food.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          food.restaurant.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || food.category === selectedCategory;
@@ -83,6 +66,15 @@ const StudentDashboard = () => {
     const newBalance = walletBalance - amount;
     setWalletBalance(newBalance);
     localStorage.setItem('nigerianWallet', newBalance.toString());
+  };
+
+  const handleToggleFavorite = (restaurantId: string) => {
+    const newFavorites = favoriteRestaurantIds.includes(restaurantId)
+      ? favoriteRestaurantIds.filter(id => id !== restaurantId)
+      : [...favoriteRestaurantIds, restaurantId];
+    
+    setFavoriteRestaurantIds(newFavorites);
+    localStorage.setItem('favoriteRestaurants', JSON.stringify(newFavorites));
   };
 
   return (
@@ -117,9 +109,9 @@ const StudentDashboard = () => {
           {categories.map((category) => (
             <CategoryCard
               key={category.id}
-              category={category}
-              isSelected={selectedCategory === category.id}
-              onSelect={() => setSelectedCategory(category.id)}
+              name={category.name}
+              emoji={category.emoji}
+              onClick={() => setSelectedCategory(category.id)}
             />
           ))}
         </div>
@@ -155,7 +147,7 @@ const StudentDashboard = () => {
         </div>
         <div className="space-y-3">
           {popularRestaurants.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            <RestaurantCard key={restaurant.id} {...restaurant} />
           ))}
         </div>
       </div>
@@ -185,10 +177,10 @@ const StudentDashboard = () => {
                     <div className="flex items-center space-x-2 mt-1">
                       <div className="flex items-center">
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-gray-600 ml-1">{food.rating}</span>
+                        <span className="text-sm text-gray-600 ml-1">4.5</span>
                       </div>
                       <span className="text-gray-400">•</span>
-                      <span className="text-sm text-gray-600">{food.prepTime}</span>
+                      <span className="text-sm text-gray-600">15-20 min</span>
                     </div>
                   </div>
                   <div className="text-right">
@@ -208,7 +200,11 @@ const StudentDashboard = () => {
 
       {/* Favorite Restaurants */}
       <div className="px-4 mb-6">
-        <FavoriteRestaurants />
+        <FavoriteRestaurants 
+          restaurants={nigerianRestaurants}
+          onToggleFavorite={handleToggleFavorite}
+          favoriteIds={favoriteRestaurantIds}
+        />
       </div>
     </div>
   );
