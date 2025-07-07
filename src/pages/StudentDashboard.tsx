@@ -1,19 +1,16 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import RestaurantCard from '@/components/RestaurantCard';
 import CategoryCard from '@/components/CategoryCard';
-import FavoriteRestaurants from '@/components/FavoriteRestaurants';
 import NigerianWallet from '@/components/NigerianWallet';
 import QRScanner from '@/components/QRScanner';
 import NigerianQRPayment from '@/components/NigerianQRPayment';
 import { 
   Search, 
   Filter, 
-  MapPin, 
   Star,
   TrendingUp,
   Clock,
@@ -22,7 +19,7 @@ import {
   Pizza,
   IceCream
 } from 'lucide-react';
-import { getAllNigerianFoods, nigerianRestaurants } from '@/data/nigerianFood';
+import { getAllNigerianFoods } from '@/data/nigerianFood';
 
 const StudentDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,10 +27,6 @@ const StudentDashboard = () => {
   const [walletBalance, setWalletBalance] = useState(() => {
     const saved = localStorage.getItem('nigerianWallet');
     return saved ? parseInt(saved) : 5000;
-  });
-  const [favoriteRestaurantIds, setFavoriteRestaurantIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem('favoriteRestaurants');
-    return saved ? JSON.parse(saved) : [];
   });
 
   const categories = [
@@ -77,18 +70,9 @@ const StudentDashboard = () => {
     localStorage.setItem('nigerianWallet', newBalance.toString());
   };
 
-  const handleToggleFavorite = (restaurantId: string) => {
-    const newFavorites = favoriteRestaurantIds.includes(restaurantId)
-      ? favoriteRestaurantIds.filter(id => id !== restaurantId)
-      : [...favoriteRestaurantIds, restaurantId];
-    
-    setFavoriteRestaurantIds(newFavorites);
-    localStorage.setItem('favoriteRestaurants', JSON.stringify(newFavorites));
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      {/* Quick Actions */}
+      {/* Wallet and Payment Actions */}
       <div className="px-4 pt-4 space-y-4">
         <NigerianWallet balance={walletBalance} onBalanceChange={setWalletBalance} />
         
@@ -101,7 +85,7 @@ const StudentDashboard = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="Search food or restaurants..."
+            placeholder="Search food items for payment..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-12 bg-white border-gray-200 focus:border-orange-500"
@@ -126,57 +110,31 @@ const StudentDashboard = () => {
         </div>
       </div>
 
-      {/* Quick Stats */}
+      {/* Payment Stats */}
       <div className="px-4 mb-6">
         <div className="grid grid-cols-2 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <TrendingUp className="w-6 h-6 text-green-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Orders This Week</p>
-              <p className="text-xl font-bold text-gray-900">12</p>
+              <p className="text-sm text-gray-600">Payments This Week</p>
+              <p className="text-xl font-bold text-gray-900">8</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <Clock className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Avg. Delivery</p>
-              <p className="text-xl font-bold text-gray-900">18 min</p>
+              <p className="text-sm text-gray-600">Avg. Payment Time</p>
+              <p className="text-xl font-bold text-gray-900">2 min</p>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Popular Restaurants */}
-      <div className="px-4 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Popular Restaurants</h2>
-          <Button variant="ghost" size="sm" className="text-orange-600">
-            See All
-          </Button>
-        </div>
-        <div className="space-y-3">
-          {nigerianRestaurants.map((restaurant) => (
-            <RestaurantCard 
-              key={restaurant.id} 
-              id={restaurant.id}
-              name={restaurant.name}
-              image={restaurant.image}
-              rating={restaurant.rating}
-              deliveryTime={restaurant.deliveryTime}
-              cuisine={restaurant.cuisine}
-              foods={restaurant.foods}
-              onToggleFavorite={() => handleToggleFavorite(restaurant.id)}
-              isFavorite={favoriteRestaurantIds.includes(restaurant.id)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Food Items */}
+      {/* Food Items for Payment */}
       <div className="px-4 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">
-            {selectedCategory === 'all' ? 'Popular Foods' : `${categories.find(c => c.id === selectedCategory)?.name} Foods`}
+            {selectedCategory === 'all' ? 'Available Food Items' : `${categories.find(c => c.id === selectedCategory)?.name} Items`}
           </h2>
           <Badge variant="secondary">{filteredFoods.length} items</Badge>
         </div>
@@ -200,7 +158,7 @@ const StudentDashboard = () => {
                         <span className="text-sm text-gray-600 ml-1">4.5</span>
                       </div>
                       <span className="text-gray-400">•</span>
-                      <span className="text-sm text-gray-600">15-20 min</span>
+                      <span className="text-sm text-gray-600">Available</span>
                     </div>
                   </div>
                   <div className="text-right">
@@ -216,15 +174,6 @@ const StudentDashboard = () => {
             </Card>
           ))}
         </div>
-      </div>
-
-      {/* Favorite Restaurants */}
-      <div className="px-4 mb-6">
-        <FavoriteRestaurants 
-          restaurants={nigerianRestaurants}
-          onToggleFavorite={handleToggleFavorite}
-          favoriteIds={favoriteRestaurantIds}
-        />
       </div>
     </div>
   );

@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { QrCode, Store, DollarSign, Users, LogOut } from 'lucide-react';
+import { QrCode, DollarSign, Users, LogOut } from 'lucide-react';
 import QRCodeGenerator from './QRCodeGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,18 +23,18 @@ const VendorAdmin = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Mock data for analytics
+  // Mock data for payment analytics
   const analytics = {
     totalRevenue: 2450.75,
-    totalOrders: 87,
-    pendingOrders: 5,
+    totalPayments: 87,
+    pendingPayments: 5,
     completedToday: 23
   };
 
-  const recentOrders = [
-    { id: 'ORD-001', amount: 24.99, status: 'paid', time: '2 mins ago' },
-    { id: 'ORD-002', amount: 18.50, status: 'pending', time: '5 mins ago' },
-    { id: 'ORD-003', amount: 32.00, status: 'paid', time: '12 mins ago' },
+  const recentPayments = [
+    { id: 'PAY-001', amount: 24.99, status: 'completed', time: '2 mins ago' },
+    { id: 'PAY-002', amount: 18.50, status: 'pending', time: '5 mins ago' },
+    { id: 'PAY-003', amount: 32.00, status: 'completed', time: '12 mins ago' },
   ];
 
   const handleLogout = async () => {
@@ -57,7 +58,7 @@ const VendorAdmin = () => {
     <div className="px-4 py-6 max-w-6xl mx-auto">
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Vendor Dashboard</h1>
+          <h1 className="text-3xl font-bold">Vendor Payment Dashboard</h1>
           <p className="text-muted-foreground">Welcome back, {vendorInfo.name}</p>
         </div>
         <Button onClick={handleLogout} variant="outline" size="sm">
@@ -67,10 +68,9 @@ const VendorAdmin = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="qr-generator">QR Generator</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -82,33 +82,33 @@ const VendorAdmin = () => {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${analytics.totalRevenue.toFixed(2)}</div>
+                <div className="text-2xl font-bold">₦{analytics.totalRevenue.toLocaleString()}</div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{analytics.totalOrders}</div>
+                <div className="text-2xl font-bold">{analytics.totalPayments}</div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
-                <Store className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+                <QrCode className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{analytics.pendingOrders}</div>
+                <div className="text-2xl font-bold">{analytics.pendingPayments}</div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Orders</CardTitle>
+                <CardTitle className="text-sm font-medium">Today's Payments</CardTitle>
                 <QrCode className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -119,24 +119,24 @@ const VendorAdmin = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
+              <CardTitle>Recent Payments</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
+                {recentPayments.map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">{order.id}</p>
-                      <p className="text-sm text-muted-foreground">{order.time}</p>
+                      <p className="font-medium">{payment.id}</p>
+                      <p className="text-sm text-muted-foreground">{payment.time}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">${order.amount.toFixed(2)}</p>
+                      <p className="font-semibold">₦{payment.amount.toLocaleString()}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        order.status === 'paid' 
+                        payment.status === 'completed' 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {order.status}
+                        {payment.status}
                       </span>
                     </div>
                   </div>
@@ -155,7 +155,7 @@ const VendorAdmin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="amount">Payment Amount ($)</Label>
+                    <Label htmlFor="amount">Payment Amount (₦)</Label>
                     <Input
                       id="amount"
                       type="number"
@@ -184,21 +184,12 @@ const VendorAdmin = () => {
                   </div>
                 </div>
                 <div>
-                  <QRCodeGenerator vendorInfo={vendorInfo} />
+                  <QRCodeGenerator 
+                    vendorInfo={vendorInfo}
+                    paymentAmount={paymentAmount}
+                    customOrderId={customOrderId}
+                  />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="orders" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-muted-foreground">Order management features coming soon...</p>
               </div>
             </CardContent>
           </Card>
