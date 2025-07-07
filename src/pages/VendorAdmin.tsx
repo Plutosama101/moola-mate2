@@ -18,8 +18,6 @@ const VendorAdmin = () => {
     address: '123 Campus Street'
   });
 
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [customOrderId, setCustomOrderId] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -151,46 +149,8 @@ const VendorAdmin = () => {
             <CardHeader>
               <CardTitle>Generate Payment QR Code</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="amount">Payment Amount (₦)</Label>
-                    <Input
-                      id="amount"
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter amount"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="orderId">Custom Order ID (Optional)</Label>
-                    <Input
-                      id="orderId"
-                      placeholder="Enter custom order ID"
-                      value={customOrderId}
-                      onChange={(e) => setCustomOrderId(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Vendor Information</Label>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>Name: {vendorInfo.name}</p>
-                      <p>ID: {vendorInfo.id}</p>
-                      <p>Address: {vendorInfo.address}</p>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <QRCodeGenerator 
-                    vendorInfo={vendorInfo}
-                    paymentAmount={paymentAmount}
-                    customOrderId={customOrderId}
-                  />
-                </div>
-              </div>
+            <CardContent>
+              <QRCodeGenerator vendorInfo={vendorInfo} />
             </CardContent>
           </Card>
         </TabsContent>
