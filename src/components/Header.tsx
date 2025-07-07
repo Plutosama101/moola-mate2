@@ -106,13 +106,15 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Notifications */}
+      {/* Single Notification System - Positioned to float */}
       {showNotifications && (
-        <NotificationSystem
-          notifications={notifications}
-          onMarkAsRead={handleMarkNotificationAsRead}
-          onDismiss={handleDismissNotification}
-        />
+        <div className="fixed top-20 right-4 z-50">
+          <NotificationSystem
+            notifications={notifications}
+            onMarkAsRead={handleMarkNotificationAsRead}
+            onDismiss={handleDismissNotification}
+          />
+        </div>
       )}
     </>
   );

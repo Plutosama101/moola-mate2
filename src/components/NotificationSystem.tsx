@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bell, X, Check } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export interface Notification {
@@ -22,10 +22,7 @@ interface NotificationSystemProps {
 }
 
 const NotificationSystem = ({ notifications, onMarkAsRead, onDismiss }: NotificationSystemProps) => {
-  const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleMarkAsRead = (id: string) => {
     onMarkAsRead(id);
@@ -53,88 +50,83 @@ const NotificationSystem = ({ notifications, onMarkAsRead, onDismiss }: Notifica
     .slice(0, 5);
 
   return (
-    <div className="relative">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative"
-      >
-        <Bell className="w-5 h-5" />
-        {unreadCount > 0 && (
-          <Badge className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 p-0 flex items-center justify-center text-xs">
-            {unreadCount}
+    <Card className="w-80 shadow-lg border-0 bg-white">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-semibold flex items-center justify-between">
+          <span>Notifications</span>
+          <Badge variant="secondary" className="text-xs">
+            {notifications.filter(n => !n.read).length} new
           </Badge>
-        )}
-      </Button>
-
-      {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-          <div className="p-4 border-b">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Notifications</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="max-h-80 overflow-y-auto space-y-3">
+          {recentNotifications.length === 0 ? (
+            <div className="text-center text-muted-foreground py-4">
+              <p className="text-sm">No notifications</p>
             </div>
-          </div>
-
-          <div className="max-h-80 overflow-y-auto">
-            {recentNotifications.length === 0 ? (
-              <div className="p-4 text-center text-muted-foreground">
-                No notifications
-              </div>
-            ) : (
-              recentNotifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 border-b last:border-b-0 ${
-                    !notification.read ? 'bg-blue-50' : ''
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <span className="text-lg">
-                      {getNotificationIcon(notification.type)}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm">{notification.title}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(notification.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex space-x-1">
-                      {!notification.read && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleMarkAsRead(notification.id)}
-                        >
-                          <Check className="w-3 h-3" />
-                        </Button>
-                      )}
+          ) : (
+            recentNotifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={`p-3 rounded-lg border transition-colors ${
+                  !notification.read ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
+                }`}
+              >
+                <div className="flex items-start space-x-3">
+                  <span className="text-lg flex-shrink-0 mt-0.5">
+                    {getNotificationIcon(notification.type)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm text-gray-900 truncate">
+                      {notification.title}
+                    </h4>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                      {notification.message}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {new Date(notification.timestamp).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex flex-col space-y-1">
+                    {!notification.read && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onDismiss(notification.id)}
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        className="p-1 h-6 w-6"
                       >
-                        <X className="w-3 h-3" />
+                        <Check className="w-3 h-3" />
                       </Button>
-                    </div>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDismiss(notification.id)}
+                      className="p-1 h-6 w-6"
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              </div>
+            ))
+          )}
         </div>
-      )}
-    </div>
+        {recentNotifications.length > 0 && (
+          <div className="mt-3 pt-3 border-t">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-xs"
+              onClick={() => notifications.forEach(n => !n.read && onMarkAsRead(n.id))}
+            >
+              Mark all as read
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

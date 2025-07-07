@@ -36,7 +36,6 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
 
       if (error) throw error;
 
-      // Set the role after successful login
       setUserRole(role);
       
       toast({
@@ -61,10 +60,12 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
     setLoading(true);
     
     try {
+      // CRITICAL FIX: Add emailRedirectTo to prevent signup failures
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             name: name,
             role: role,
@@ -74,7 +75,6 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
 
       if (error) throw error;
 
-      // Set the role after successful signup
       setUserRole(role);
       
       toast({

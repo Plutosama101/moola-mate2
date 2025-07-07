@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { useToast } from '@/hooks/use-toast';
 
 export type UserRole = 'student' | 'vendor' | null;
 
@@ -25,8 +26,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<UserRole>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
+    console.log('Setting up auth state listener...');
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -40,6 +44,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           const savedRole = localStorage.getItem('userRole') as UserRole;
           if (savedRole) {
             setRole(savedRole);
+          } else {
+            // If no saved role, try to get from user metadata
+            const metadataRole = session.user.user_metadata?.role as UserRole;
+            if (metadataRole) {
+              setRole(metadataRole);
+              localStorage.setItem('userRole', metadataRole);
+            }
           }
         } else {
           setRole(null);
@@ -50,6 +61,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -58,6 +70,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         const savedRole = localStorage.getItem('userRole') as UserRole;
         if (savedRole) {
           setRole(savedRole);
+        } else {
+          // If no saved role, try to get from user metadata
+          const metadataRole = session.user.user_metadata?.role as UserRole;
+          if (metadataRole) {
+            setRole(metadataRole);
+            localStorage.setItem('userRole', metadataRole);
+          }
         }
       }
     });
@@ -66,6 +85,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const handleSetRole = (newRole: UserRole) => {
+    console.log('Setting role:', newRole);
     setRole(newRole);
     if (newRole) {
       localStorage.setItem('userRole', newRole);
@@ -76,6 +96,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
+      console.log('Logging out user...');
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
@@ -84,8 +105,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem('nigerianWallet');
       localStorage.setItem('nigerianWallet', '5000');
       setShowAuthDialog(false);
+      
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of SnappyEats",
+      });
     } catch (error) {
       console.error('Error logging out:', error);
+      toast({
+        title: "Logout Error",
+        description: "There was an error logging you out",
+        variant: "destructive",
+      });
     }
   };
 

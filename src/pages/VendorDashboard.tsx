@@ -8,16 +8,15 @@ import {
   Store, 
   ShoppingBag, 
   DollarSign, 
-  TrendingUp, 
-  Users, 
-  Clock,
   CheckCircle,
-  XCircle,
-  Package
+  Clock,
+  Package,
+  LogOut,
+  Settings,
+  User
 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import PrintableReceipt from '@/components/PrintableReceipt';
-import { storage } from '@/utils/storage';
 
 interface Order {
   id: string;
@@ -34,7 +33,7 @@ interface Order {
 }
 
 const VendorDashboard = () => {
-  const { user } = useUser();
+  const { user, logout } = useUser();
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -91,8 +90,12 @@ const VendorDashboard = () => {
       case 'preparing': return <Package className="w-4 h-4" />;
       case 'ready': return <CheckCircle className="w-4 h-4" />;
       case 'delivered': return <CheckCircle className="w-4 h-4" />;
-      default: return <XCircle className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
     }
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
@@ -101,13 +104,43 @@ const VendorDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+      {/* Vendor Header with Logout */}
+      <header className="bg-white border-b border-gray-100 shadow-sm">
+        <div className="px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+              <Store className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Vendor Dashboard</h1>
+              <p className="text-sm text-gray-600">Welcome, {user?.user_metadata?.name || 'Vendor'}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Settings</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleLogout}
+              className="flex items-center space-x-2 text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </Button>
+          </div>
+        </div>
+      </header>
+
       {/* Main Content */}
       <main className="px-4 py-6 space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-orange-600 mb-2">Vendor Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {user?.user_metadata?.name || 'Vendor'}</p>
-        </div>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -280,7 +313,11 @@ const VendorDashboard = () => {
                 <CardTitle>Menu Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Menu management features coming soon...</p>
+                <div className="text-center py-8">
+                  <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-muted-foreground">Menu management features coming soon...</p>
+                  <Button className="mt-4">Add Menu Item</Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -291,7 +328,11 @@ const VendorDashboard = () => {
                 <CardTitle>Analytics & Reports</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Analytics dashboard coming soon...</p>
+                <div className="text-center py-8">
+                  <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-muted-foreground">Analytics dashboard coming soon...</p>
+                  <Button className="mt-4">View Reports</Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
